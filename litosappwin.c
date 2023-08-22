@@ -71,6 +71,16 @@ litos_app_window_init (LitosAppWindow *win)
 	menu = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
 	gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (win->gears), menu);
 	g_object_unref (builder);
+
+	win->settings = g_settings_new ("org.gtk.litos");
+
+	g_settings_bind (win->settings, "transition",
+		win->stack, "transition-type",
+		G_SETTINGS_BIND_DEFAULT);
+
+	g_object_bind_property (win->search, "active",
+		win->searchbar, "search-mode-enabled",
+		G_BINDING_BIDIRECTIONAL);
 }
 
 static void

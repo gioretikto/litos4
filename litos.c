@@ -4,6 +4,8 @@
 #include "litosappwin.h"
 #include "litosappprefs.h"
 
+void setAccels (GApplication *app);
+
 struct _LitosApp
 {
 	GtkApplication parent;
@@ -29,24 +31,12 @@ preferences_activated (GSimpleAction *action,
 	gtk_window_present (GTK_WINDOW (prefs));
 }
 
-static void
-quit_activated (GSimpleAction *action,
-                GVariant      *parameter,
-                gpointer       app)
-{
-	g_application_quit (G_APPLICATION (app));
-}
-
-static GActionEntry app_entries[] =
-{
-	{ "preferences", preferences_activated, NULL, NULL, NULL },
-	{ "quit", quit_activated, NULL, NULL, NULL }
-};
 
 static void
 litos_app_startup (GApplication *app)
 {
-	const char *quit_accels[2] = { "<Ctrl>Q", NULL };
+	setAccels(app);
+
 	G_APPLICATION_CLASS (litos_app_parent_class)->startup (app);
 
 	/*GtkCssProvider *provider = gtk_css_provider_new ();
@@ -61,12 +51,6 @@ litos_app_startup (GApplication *app)
 
 	g_object_unref (provider);*/
 
-	g_action_map_add_action_entries (G_ACTION_MAP (app),
-                                   app_entries, G_N_ELEMENTS (app_entries),
-                                   app);
-	gtk_application_set_accels_for_action (GTK_APPLICATION (app),
-				"app.quit",
-				quit_accels);
 }
 
 static void
