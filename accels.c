@@ -58,6 +58,14 @@ preferences_activated (GSimpleAction *action,
 }
 
 static void
+close_activated (GSimpleAction *action,
+                GVariant      *parameter,
+                gpointer       app)
+{
+	g_application_quit (G_APPLICATION (app));
+}
+
+static void
 quit_activated (GSimpleAction *action,
                 GVariant      *parameter,
                 gpointer       app)
@@ -65,22 +73,30 @@ quit_activated (GSimpleAction *action,
 	g_application_quit (G_APPLICATION (app));
 }
 
-static GActionEntry app_entries[] =
-{
-	{"preferences", preferences_activated, NULL, NULL, NULL },
-	{"open", open_activated, NULL, NULL, NULL},
-	{"quit", quit_activated, NULL, NULL, NULL }
-};
-
-
 void setAccels (GApplication *app)
 {
-	const char *quit_accels[2] = { "<Ctrl>Q", NULL };
+	long unsigned int i;
 
-	g_action_map_add_action_entries (G_ACTION_MAP (app),
-                                   app_entries, G_N_ELEMENTS (app_entries),
-                                   app);
-	gtk_application_set_accels_for_action (GTK_APPLICATION (app),
-				"app.quit",
-				quit_accels);
+	/* map actions to callbacks */
+	const GActionEntry app_entries[] = {
+		{"preferences", preferences_activated, NULL, NULL, NULL },
+		{"open", open_activated, NULL, NULL, NULL},
+		{"close", close_activated, NULL, NULL, NULL},
+		{"quit", quit_activated, NULL, NULL, NULL }
+	};
+
+	/* define keyboard accelerators*/
+	struct {
+	  const gchar *action;
+	  const gchar *accels[2];
+	} action_accels[] = {
+	  { "app.close", { "<Control>w", NULL} },
+	  { "app.open", { "<Control>o", NULL} },
+	  { "app.quit", { "<Control>q", NULL} }
+	};
+
+	g_action_map_add_action_entries(G_ACTION_MAP(app), app_entries, G_N_ELEMENTS(app_entries), app);
+
+	for (i = 0; i < G_N_ELEMENTS(action_accels); i++)
+		gtk_application_set_accels_for_action(GTK_APPLICATION(app), action_accels[i].action, action_accels[i].accels);
 }

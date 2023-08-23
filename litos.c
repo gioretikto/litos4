@@ -38,6 +38,15 @@ litos_app_startup (GApplication *app)
 	setAccels(app);
 
 	G_APPLICATION_CLASS (litos_app_parent_class)->startup (app);
+
+	GdkDisplay *display = gdk_display_get_default ();
+	GtkCssProvider *provider = gtk_css_provider_new ();
+	gtk_css_provider_load_from_path (provider, "litos.css");
+
+	gtk_style_context_add_provider_for_display (display,
+				GTK_STYLE_PROVIDER (provider),
+				GTK_STYLE_PROVIDER_PRIORITY_USER);
+	g_object_unref (provider);
 }
 
 static void
@@ -47,7 +56,7 @@ litos_app_activate (GApplication *app)
 
 	win = litos_app_window_new (LITOS_APP (app));
 
-	//gtk_window_set_title (GTK_WINDOW (win), "Litos");
+	gtk_window_set_title (GTK_WINDOW (win), "Litos");
 	gtk_window_maximize (GTK_WINDOW (win));
 	gtk_window_present (GTK_WINDOW (win));
 }
@@ -80,8 +89,8 @@ litos_app_open (GApplication  *app,
 static void
 litos_app_class_init (LitosAppClass *class)
 {
-	G_APPLICATION_CLASS (class)->startup = litos_app_startup;
 	G_APPLICATION_CLASS (class)->activate = litos_app_activate;
+	G_APPLICATION_CLASS (class)->startup = litos_app_startup;
 	G_APPLICATION_CLASS (class)->open = litos_app_open;
 }
 
