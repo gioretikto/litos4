@@ -6,6 +6,40 @@
 
 void litos_app_window_open (LitosAppWindow *win, GFile *file);
 
+static void
+close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
+
+	GtkWidget *child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+
+	if (child != NULL)
+		gtk_stack_remove(GTK_STACK(win->stack), child);
+}
+
+void setWinAccels (LitosAppWindow *win)
+{
+	long unsigned int i;
+
+	/* map actions to callbacks */
+	const GActionEntry win_entries[] = {
+		{"close", close_activated, NULL, NULL, NULL}
+	};
+
+	/* define keyboard accelerators*/
+	struct {
+	  const gchar *action;
+	  const gchar *accels[2];
+	} action_accels[] = {
+	  { "win.close", { "<Control>w", NULL} },
+	};
+
+	g_action_map_add_action_entries(G_ACTION_MAP(win), win_entries, G_N_ELEMENTS(win_entries), win);
+
+	/*for (i = 0; i < G_N_ELEMENTS(action_accels); i++)
+		gtk_application_set_accels_for_action(GTK_APPLICATION(win), action_accels[i].action, action_accels[i].accels);*/
+}
+
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
 	if (response == GTK_RESPONSE_ACCEPT)
@@ -58,14 +92,6 @@ preferences_activated (GSimpleAction *action,
 }
 
 static void
-close_activated (GSimpleAction *action,
-                GVariant      *parameter,
-                gpointer       app)
-{
-	g_application_quit (G_APPLICATION (app));
-}
-
-static void
 quit_activated (GSimpleAction *action,
                 GVariant      *parameter,
                 gpointer       app)
@@ -73,7 +99,7 @@ quit_activated (GSimpleAction *action,
 	g_application_quit (G_APPLICATION (app));
 }
 
-void setAccels (GApplication *app)
+void setAppAccels (GApplication *app)
 {
 	long unsigned int i;
 

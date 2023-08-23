@@ -59,6 +59,8 @@ visible_child_changed (GObject	*stack,
 	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (win->searchbar), FALSE);
 }
 
+void setWinAccels (LitosAppWindow *win);
+
 static void
 litos_app_window_init (LitosAppWindow *win)
 {
@@ -81,6 +83,8 @@ litos_app_window_init (LitosAppWindow *win)
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
 		G_BINDING_BIDIRECTIONAL);
+
+	setWinAccels (win);
 }
 
 static void

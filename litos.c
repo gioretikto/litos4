@@ -4,7 +4,7 @@
 #include "litosappwin.h"
 #include "litosappprefs.h"
 
-void setAccels (GApplication *app);
+void setAppAccels (GApplication *app);
 
 struct _LitosApp
 {
@@ -35,7 +35,7 @@ preferences_activated (GSimpleAction *action,
 static void
 litos_app_startup (GApplication *app)
 {
-	setAccels(app);
+	setAppAccels(app);
 
 	G_APPLICATION_CLASS (litos_app_parent_class)->startup (app);
 
