@@ -118,9 +118,7 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-void
-litos_app_window_open (LitosAppWindow *win,
-                         GFile            *file)
+void litos_app_window_open (LitosAppWindow *win, GFile *file)
 {
 	char *basename;
 	GtkWidget *scrolled, *view;
@@ -149,6 +147,7 @@ litos_app_window_open (LitosAppWindow *win,
 	}
 
 	tag = gtk_text_buffer_create_tag (buffer, NULL, NULL);
+
 	g_settings_bind (win->settings, "font",
 		tag, "font",
 		G_SETTINGS_BIND_DEFAULT);

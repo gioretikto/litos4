@@ -4,6 +4,46 @@
 #include "litosappwin.h"
 #include "litosappprefs.h"
 
+void litos_app_window_open (LitosAppWindow *win, GFile *file);
+
+static void open_cb (GtkWidget *dialog, gint response, gpointer win)
+{
+	if (response == GTK_RESPONSE_ACCEPT)
+	{
+		GFile *file = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
+
+		litos_app_window_open(LITOS_APP_WINDOW(win), file);		
+	}
+
+	gtk_window_destroy (GTK_WINDOW (dialog));
+}
+
+static void
+open_activated(GSimpleAction *action, GVariant *parameter, gpointer app)
+{
+	(void)action;
+	(void)parameter;
+
+	GtkWidget *dialog;
+
+	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+
+	dialog = gtk_file_chooser_dialog_new ("Open File",
+		NULL,
+		GTK_FILE_CHOOSER_ACTION_OPEN,
+		"Cancel",
+		GTK_RESPONSE_CANCEL,
+		"Open",
+		GTK_RESPONSE_ACCEPT,
+		NULL);
+
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), win);
+
+	gtk_widget_show(dialog);
+
+	g_signal_connect (dialog, "response", G_CALLBACK (open_cb), win);
+}
+
 static void
 preferences_activated (GSimpleAction *action,
                        GVariant      *parameter,
@@ -17,7 +57,7 @@ preferences_activated (GSimpleAction *action,
 	gtk_window_present (GTK_WINDOW (prefs));
 }
 
-void
+static void
 quit_activated (GSimpleAction *action,
                 GVariant      *parameter,
                 gpointer       app)
@@ -27,8 +67,9 @@ quit_activated (GSimpleAction *action,
 
 static GActionEntry app_entries[] =
 {
-	{ "preferences", preferences_activated, NULL, NULL, NULL },
-	{ "quit", quit_activated, NULL, NULL, NULL }
+	{"preferences", preferences_activated, NULL, NULL, NULL },
+	{"open", open_activated, NULL, NULL, NULL},
+	{"quit", quit_activated, NULL, NULL, NULL }
 };
 
 
