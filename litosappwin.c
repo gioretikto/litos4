@@ -19,6 +19,40 @@ struct _LitosAppWindow
 G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW)
 
 static void
+close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
+
+	GtkWidget *child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+
+	if (child != NULL)
+		gtk_stack_remove(GTK_STACK(win->stack), child);
+}
+
+void setWinAccels (LitosAppWindow *win)
+{
+	long unsigned int i;
+
+	/* map actions to callbacks */
+	const GActionEntry win_entries[] = {
+		{"close", close_activated, NULL, NULL, NULL}
+	};
+
+	/* define keyboard accelerators*/
+	struct {
+	  const gchar *action;
+	  const gchar *accels[2];
+	} action_accels[] = {
+	  { "win.close", { "<Control>w", NULL} },
+	};
+
+	g_action_map_add_action_entries(G_ACTION_MAP(win), win_entries, G_N_ELEMENTS(win_entries), win);
+
+	/*for (i = 0; i < G_N_ELEMENTS(action_accels); i++)
+		gtk_application_set_accels_for_action(GTK_APPLICATION(win), action_accels[i].action, action_accels[i].accels);*/
+}
+
+static void
 search_text_changed (GtkEntry	*entry,
                      LitosAppWindow *win)
 {
