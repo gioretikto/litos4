@@ -2,21 +2,14 @@
 
 #include "litosapp.h"
 #include "litosappwin.h"
+#include "litosfile.h"
 
 GtkWidget* MyNewSourceview();
 
-struct _LitosAppWindow
-{
-	GtkApplicationWindow parent;
-
-	GSettings *settings;
-	GtkWidget *stack;
-	GtkWidget *gears;
-	GtkWidget *search;
-	GtkWidget *searchbar;
-};
-
 G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW)
+
+gchar * litos_file_basename(LitosFile *file);
+LitosFile * litos_file_new(LitosAppWindow *win);
 
 static void
 close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
@@ -24,33 +17,12 @@ close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
 	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
 
 	GtkWidget *child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
-
+	g_print("ctrl-w pressed\n");
+	printf("ptr = %p\n", (void *)child);
 	if (child != NULL)
 		gtk_stack_remove(GTK_STACK(win->stack), child);
 }
 
-void setWinAccels (LitosAppWindow *win)
-{
-	long unsigned int i;
-
-	/* map actions to callbacks */
-	const GActionEntry win_entries[] = {
-		{"close", close_activated, NULL, NULL, NULL}
-	};
-
-	/* define keyboard accelerators*/
-	struct {
-	  const gchar *action;
-	  const gchar *accels[2];
-	} action_accels[] = {
-	  { "win.close", { "<Control>w", NULL} },
-	};
-
-	g_action_map_add_action_entries(G_ACTION_MAP(win), win_entries, G_N_ELEMENTS(win_entries), win);
-
-	/*for (i = 0; i < G_N_ELEMENTS(action_accels); i++)
-		gtk_application_set_accels_for_action(GTK_APPLICATION(win), action_accels[i].action, action_accels[i].accels);*/
-}
 
 static void
 search_text_changed (GtkEntry	*entry,
@@ -93,8 +65,6 @@ visible_child_changed (GObject	*stack,
 	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (win->searchbar), FALSE);
 }
 
-void setWinAccels (LitosAppWindow *win);
-
 static void
 litos_app_window_init (LitosAppWindow *win)
 {
@@ -117,8 +87,6 @@ litos_app_window_init (LitosAppWindow *win)
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
 		G_BINDING_BIDIRECTIONAL);
-
-	setWinAccels (win);
 }
 
 static void
@@ -136,7 +104,6 @@ litos_app_window_dispose (GObject *object)
 static void
 litos_app_window_class_init (LitosAppWindowClass *class)
 {
-
 	G_OBJECT_CLASS (class)->dispose = litos_app_window_dispose;
 
 	gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (class),
@@ -156,45 +123,18 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-void litos_app_window_open (LitosAppWindow *win, GFile *file)
+void litos_app_window_open (LitosAppWindow *win, GFile *gfile)
 {
-	char *basename;
-	GtkWidget *scrolled, *view;
 	char *contents;
 	gsize length;
-	GtkTextBuffer *buffer;
-	GtkTextTag *tag;
-	GtkTextIter start_iter, end_iter;
 
-	basename = g_file_get_basename (file);
+	LitosFile *file = litos_file_new(win);
 
-	scrolled = gtk_scrolled_window_new ();
-	gtk_widget_set_hexpand (scrolled, TRUE);
-	gtk_widget_set_vexpand (scrolled, TRUE);
-	view = MyNewSourceview();
+	file->gfile = gfile;
 
-	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scrolled), view);
-	gtk_stack_add_titled (GTK_STACK (win->stack), scrolled, basename, basename);
-
-	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
-
-	if (g_file_load_contents (file, NULL, &contents, &length, NULL, NULL))
+	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, NULL))
 	{
-		gtk_text_buffer_set_text (buffer, contents, length);
+		gtk_text_buffer_set_text (file->buffer, contents, length);
 		g_free (contents);
 	}
-
-	tag = gtk_text_buffer_create_tag (buffer, NULL, NULL);
-
-	g_settings_bind (win->settings, "font",
-		tag, "font",
-		G_SETTINGS_BIND_DEFAULT);
-
-	gtk_text_buffer_get_start_iter (buffer, &start_iter);
-	gtk_text_buffer_get_end_iter (buffer, &end_iter);
-	gtk_text_buffer_apply_tag (buffer, tag, &start_iter, &end_iter);
-
-	g_free (basename);
-
-	gtk_widget_set_sensitive (win->search, TRUE);
 }

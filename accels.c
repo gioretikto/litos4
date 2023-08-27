@@ -5,6 +5,7 @@
 #include "litosappprefs.h"
 
 void litos_app_window_open (LitosAppWindow *win, GFile *file);
+LitosFile * litos_file_new(LitosAppWindow *win);
 
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
@@ -65,7 +66,32 @@ quit_activated (GSimpleAction *action,
 	g_application_quit (G_APPLICATION (app));
 }
 
-void setAppAccels (GApplication *app)
+static void
+new_file (GSimpleAction *action,
+                GVariant      *parameter,
+                gpointer       app)
+{
+
+	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
+
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+	litos_file_new(win);
+}
+
+
+static void
+close_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
+{
+	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
+
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+
+	GtkWidget *child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+	if (child != NULL)
+		gtk_stack_remove(GTK_STACK(win->stack), child);
+}
+
+void setAccels (GApplication *app)
 {
 	long unsigned int i;
 
@@ -73,6 +99,8 @@ void setAppAccels (GApplication *app)
 	const GActionEntry app_entries[] = {
 		{"preferences", preferences_activated, NULL, NULL, NULL },
 		{"open", open_activated, NULL, NULL, NULL},
+		{"new", new_file, NULL, NULL, NULL},
+		{"close", close_activated, NULL, NULL, NULL},
 		{"quit", quit_activated, NULL, NULL, NULL }
 	};
 
@@ -82,6 +110,8 @@ void setAppAccels (GApplication *app)
 	  const gchar *accels[2];
 	} action_accels[] = {
 	  { "app.open", { "<Control>o", NULL} },
+	  { "app.new", { "<Control>n", NULL} },
+	  { "app.close", { "<Control>w", NULL} },
 	  { "app.quit", { "<Control>q", NULL} }
 	};
 
