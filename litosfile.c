@@ -15,10 +15,10 @@ struct _LitosFile
 	GtkWidget *view;
 
 	/* the text buffer of the file */
-	GtkTextBuffer      *buffer;
+	GtkTextBuffer *buffer;
 
 	/*filename */
-	gchar              *name;
+	gchar *name;
 
 	GtkTextTag *tag;
 
@@ -61,6 +61,11 @@ litos_app_window_dispose (GObject *object)
 
 
 	G_OBJECT_CLASS (litos_file_parent_class)->dispose (object);
+}
+
+void litos_file_setter(LitosFile *lf, GFile* file)
+{
+	lf->gfile = file;
 }
 
 static void

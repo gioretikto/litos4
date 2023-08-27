@@ -10,6 +10,7 @@ G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW)
 
 gchar * litos_file_basename(LitosFile *file);
 LitosFile * litos_file_new(LitosAppWindow *win);
+void litos_file_setter(LitosFile *lf, GFile* file);
 
 static void
 close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
@@ -123,14 +124,14 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-void litos_app_window_open (LitosAppWindow *win, GFile *gfile)
+void litos_app_window_open (LitosAppWindow *win, GFile *gf)
 {
 	char *contents;
 	gsize length;
 
 	LitosFile *file = litos_file_new(win);
 
-	file->gfile = gfile;
+	litos_file_setter(file, gf);
 
 	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, NULL))
 	{

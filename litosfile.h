@@ -7,7 +7,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE(LitosFile, litos_file, LITOS, FILE, GObject)
 
-LitosFile *          litos_file_new           (LitosAppWindow);
+LitosFile *          litos_file_new           (LitosAppWindow*);
 
 G_END_DECLS
 
