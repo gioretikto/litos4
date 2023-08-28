@@ -6,11 +6,20 @@
 
 GtkWidget* MyNewSourceview();
 
-G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW)
-
-gchar * litos_file_basename(LitosFile *file);
 LitosFile * litos_file_new(LitosAppWindow *win);
-void litos_file_setter(LitosFile *lf, GFile* file);
+
+struct _LitosAppWindow
+{
+	GtkApplicationWindow parent;
+
+	GSettings *settings;
+	GtkWidget *stack;
+	GtkWidget *gears;
+	GtkWidget *search;
+	GtkWidget *searchbar;
+};
+
+G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
 static void
 close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
@@ -124,18 +133,25 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-void litos_app_window_open (LitosAppWindow *win, GFile *gf)
+void litos_app_window_setter (LitosAppWindow *win, GtkTextTag *tag)
 {
-	char *contents;
-	gsize length;
+	gtk_widget_set_sensitive (win->search, TRUE);
 
-	LitosFile *file = litos_file_new(win);
+	g_settings_bind (win->settings, "font",
+			tag, "font",
+			G_SETTINGS_BIND_DEFAULT);
+}
 
-	litos_file_setter(file, gf);
+void litos_app_window_stack_remove(LitosAppWindow *win)
+{
+	GtkWidget *child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
 
-	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, NULL))
-	{
-		gtk_text_buffer_set_text (file->buffer, contents, length);
-		g_free (contents);
-	}
+	if (child != NULL)
+		gtk_stack_remove(GTK_STACK(win->stack), child);
+
+}
+
+void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename)
+{
+	gtk_stack_add_titled (GTK_STACK (win->stack), scrolled, filename, filename);
 }

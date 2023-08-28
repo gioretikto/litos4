@@ -1,11 +1,12 @@
 #include <gtk/gtk.h>
 
 #include "litosapp.h"
-#include "litosappwin.h"
 #include "litosappprefs.h"
+#include "litosfile.h"
 
-void litos_app_window_open (LitosAppWindow *win, GFile *file);
+void litos_file_load (LitosAppWindow *win, GFile *gf);
 LitosFile * litos_file_new(LitosAppWindow *win);
+void litos_app_window_stack_remove(LitosAppWindow *win);
 
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
@@ -13,7 +14,7 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 	{
 		GFile *file = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
 
-		litos_app_window_open(LITOS_APP_WINDOW(win), file);		
+		litos_file_load(LITOS_APP_WINDOW(win), file);		
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
@@ -86,9 +87,7 @@ close_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
 
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
-	GtkWidget *child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
-	if (child != NULL)
-		gtk_stack_remove(GTK_STACK(win->stack), child);
+	litos_app_window_stack_remove(win);
 }
 
 void setAccels (GApplication *app)

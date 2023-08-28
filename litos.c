@@ -1,11 +1,11 @@
 #include <gtk/gtk.h>
 
 #include "litosapp.h"
-#include "litosappwin.h"
 #include "litosappprefs.h"
 #include "litosfile.h"
 
 void setAccels (GApplication *app);
+void litos_file_load (LitosAppWindow *win, GFile *gf);
 
 struct _LitosApp
 {
@@ -80,7 +80,7 @@ litos_app_open (GApplication  *app,
 		win = litos_app_window_new (LITOS_APP (app));
 
 	for (i = 0; i < n_files; i++)
-		litos_app_window_open (win, files[i]);
+		litos_file_load (win, files[i]);
 
 	gtk_window_set_title (GTK_WINDOW (win), "Litos");
 	gtk_window_maximize (GTK_WINDOW (win));
