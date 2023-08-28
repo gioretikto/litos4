@@ -5,7 +5,6 @@
     <child type="titlebar">
       <object class="GtkHeaderBar" id="header">
         <child type="title">
-    <property name="title">Litos</property>
           <object class="GtkStackSwitcher" id="tabs">
             <property name="stack">stack</property>
           </object>

@@ -5,7 +5,7 @@
 #include "litosfile.h"
 
 void litos_file_load (LitosAppWindow *win, GFile *gf);
-LitosFile * litos_file_new(LitosAppWindow *win);
+LitosFile * litos_file_new_tab(LitosAppWindow *win);
 void litos_app_window_stack_remove(LitosAppWindow *win);
 
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
@@ -76,7 +76,7 @@ new_file (GSimpleAction *action,
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
-	litos_file_new(win);
+	litos_file_new_tab(win);
 }
 
 

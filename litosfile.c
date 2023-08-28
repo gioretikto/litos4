@@ -65,9 +65,11 @@ LitosFile *litos_file_new(LitosAppWindow *win)
 	return g_object_new (LITOS_TYPE_FILE, NULL);
 }
 
-void litos_file_new_tab(LitosAppWindow *win, LitosFile *file)
+LitosFile * litos_file_new_tab(LitosAppWindow *win)
 {
 	GtkTextTag *tag;
+
+	LitosFile *file = litos_file_new(win);
 
 	file->name = g_strdup("Untitled");
 
@@ -93,6 +95,8 @@ void litos_file_new_tab(LitosAppWindow *win, LitosFile *file)
 	gtk_text_buffer_apply_tag (file->buffer, tag, &start_iter, &end_iter);
 
 	litos_app_window_set_file (win,tag);
+
+	return file;
 }
 
 void litos_file_load (LitosAppWindow *win, GFile *gf)
@@ -100,12 +104,11 @@ void litos_file_load (LitosAppWindow *win, GFile *gf)
 	char *contents;
 	gsize length;
 
-	LitosFile *file = litos_file_new(win);
-
-	litos_file_new_tab(win,file);
+	LitosFile *file = litos_file_new_tab(win);
 
 	file->gfile = gf;
 
+	g_free (file->name);
 	file->name = g_file_get_basename(gf);
 
 	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, NULL))
