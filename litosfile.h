@@ -3,7 +3,7 @@
 
 G_BEGIN_DECLS
 
-#define LITOS_FILE_TYPE (litos_file_get_type ())
+#define LITOS_TYPE_FILE (litos_file_get_type ())
 
 #include "litosappwin.h"
 

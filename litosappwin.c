@@ -133,7 +133,7 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-void litos_app_window_setter (LitosAppWindow *win, GtkTextTag *tag)
+void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag)
 {
 	gtk_widget_set_sensitive (win->search, TRUE);
 

@@ -3,7 +3,7 @@
 #include "litosfile.h"
 
 GtkWidget* MyNewSourceview();
-void litos_app_window_setter (LitosAppWindow *win, GtkTextTag *tag);
+void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag);
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename);
 
 struct _LitosFile
@@ -62,7 +62,7 @@ litos_file_class_init (LitosFileClass *class)
 
 LitosFile *litos_file_new(LitosAppWindow *win)
 {
-	return g_object_new (LITOS_FILE_TYPE, NULL);
+	return g_object_new (LITOS_TYPE_FILE, NULL);
 }
 
 void litos_file_new_tab(LitosAppWindow *win, LitosFile *file)
@@ -92,7 +92,7 @@ void litos_file_new_tab(LitosAppWindow *win, LitosFile *file)
 	gtk_text_buffer_get_end_iter (file->buffer, &end_iter);
 	gtk_text_buffer_apply_tag (file->buffer, tag, &start_iter, &end_iter);
 
-	litos_app_window_setter (win,tag);
+	litos_app_window_set_file (win,tag);
 }
 
 void litos_file_load (LitosAppWindow *win, GFile *gf)
