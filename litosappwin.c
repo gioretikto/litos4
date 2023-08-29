@@ -148,7 +148,6 @@ void litos_app_window_stack_remove(LitosAppWindow *win)
 
 	if (child != NULL)
 		gtk_stack_remove(GTK_STACK(win->stack), child);
-
 }
 
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename)

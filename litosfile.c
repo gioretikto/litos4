@@ -25,7 +25,6 @@ struct _LitosFile
 	gchar *name;
 
 	_Bool saved;
-
 };
 
 G_DEFINE_TYPE (LitosFile, litos_file, G_TYPE_OBJECT)
@@ -116,4 +115,31 @@ void litos_file_load (LitosAppWindow *win, GFile *gf)
 		gtk_text_buffer_set_text (file->buffer, contents, length);
 		g_free (contents);
 	}
+}
+
+void litos_file_save(LitosAppWindow *win, GFile *gf)
+{
+	GtkWidget *err_dialog;
+	char *contents;
+	gchar *filename;
+	GtkTextIter start_iter;
+	GtkTextIter end_iter;
+
+	g_free (file->name);
+	file->name = g_file_get_basename(gf);
+	gtk_text_buffer_get_bounds(file->buffer, &start_iter, &end_iter);
+	contents = gtk_text_buffer_get_text(file->buffer, &start_iter, &end_iter, TRUE);
+
+	if (g_file_replace_contents(file->gfile), contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, NULL)) {
+		file->save = TRUE;
+		//gtk_window_set_title(GTK_WINDOW(win), filename);
+	}else {
+		err_dialog = gtk_err_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
+		GTK_BUTTONS_CLOSE, "ERROR : Can't save %s.", file->name);
+		gtk_dialog_run(GTK_DIALOG(err_dialog));
+		gtk_widget_destroy(err_dialog);
+	}
+
+	g_free(filename);
+	g_free(contents);
 }

@@ -1,11 +1,11 @@
-CC ?= gcc -ggdb3
+CC ?= gcc
 PKGCONFIG = $(shell which pkg-config)
 CFLAGS = $(shell $(PKGCONFIG) --cflags gtk4 gtksourceview-5)
 LIBS = $(shell $(PKGCONFIG) --libs gtk4 gtksourceview-5)
 GLIB_COMPILE_RESOURCES = $(shell $(PKGCONFIG) --variable=glib_compile_resources gio-2.0)
 GLIB_COMPILE_SCHEMAS = $(shell $(PKGCONFIG) --variable=glib_compile_schemas gio-2.0)
 
-SRC = litos.c litosappwin.c sourceview.c litosappprefs.c accels.c litosfile.c main.c
+SRC = litosapp.c litosappwin.c sourceview.c litosappprefs.c litosaccels.c litosfile.c main.c
 BUILT_SRC = resources.c
 
 OBJS = $(BUILT_SRC:.c=.o) $(SRC:.c=.o)
