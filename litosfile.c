@@ -130,6 +130,7 @@ void litos_file_save(LitosAppWindow *win, GFile *gf)
 	GtkWidget *view = gtk_scrolled_window_get_child (GTK_SCROLLED_WINDOW (tab));
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
+	filename = g_file_get_basename(gf);
 	gtk_text_buffer_get_bounds(buffer, &start_iter, &end_iter);
 	contents = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, TRUE);
 
