@@ -33,7 +33,6 @@ close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
 		gtk_stack_remove(GTK_STACK(win->stack), child);
 }
 
-
 static void
 search_text_changed (GtkEntry	*entry,
                      LitosAppWindow *win)
@@ -142,12 +141,17 @@ void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag)
 			G_SETTINGS_BIND_DEFAULT);
 }
 
-void litos_app_window_stack_remove(LitosAppWindow *win)
+GtkWidget * litos_app_window_get_child(LitosAppWindow *win)
 {
-	GtkWidget *child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+	return gtk_stack_get_visible_child(GTK_STACK(win->stack));
+}
 
-	if (child != NULL)
-		gtk_stack_remove(GTK_STACK(win->stack), child);
+void litos_app_window_remove_child(LitosAppWindow *win)
+{
+	GtkWidget * child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+
+	if(child != NULL)
+		gtk_stack_remove(GTK_STACK(win->stack), child);	
 }
 
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename)

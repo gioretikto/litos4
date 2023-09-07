@@ -5,6 +5,7 @@
 GtkWidget* MyNewSourceview();
 void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag);
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename);
+GtkWidget * litos_app_window_get_child(LitosAppWindow *win);
 
 struct _LitosFile
 {
@@ -125,19 +126,18 @@ void litos_file_save(LitosAppWindow *win, GFile *gf)
 	GtkTextIter start_iter;
 	GtkTextIter end_iter;
 
-	g_free (file->name);
-	file->name = g_file_get_basename(gf);
-	gtk_text_buffer_get_bounds(file->buffer, &start_iter, &end_iter);
-	contents = gtk_text_buffer_get_text(file->buffer, &start_iter, &end_iter, TRUE);
+	GtkWidget *tab = litos_app_window_get_child (win);
+	GtkWidget *view = gtk_scrolled_window_get_child (GTK_SCROLLED_WINDOW (tab));
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
-	if (g_file_replace_contents(file->gfile), contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, NULL)) {
-		file->save = TRUE;
-		//gtk_window_set_title(GTK_WINDOW(win), filename);
-	}else {
-		err_dialog = gtk_err_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-		GTK_BUTTONS_CLOSE, "ERROR : Can't save %s.", file->name);
-		gtk_dialog_run(GTK_DIALOG(err_dialog));
-		gtk_widget_destroy(err_dialog);
+	gtk_text_buffer_get_bounds(buffer, &start_iter, &end_iter);
+	contents = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, TRUE);
+
+	if (g_file_replace_contents(gf, contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, NULL))
+		gtk_window_set_title(GTK_WINDOW(win), filename);
+
+	else {
+		printf("error");
 	}
 
 	g_free(filename);
