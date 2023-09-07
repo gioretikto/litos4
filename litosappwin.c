@@ -17,6 +17,7 @@ struct _LitosAppWindow
 	GtkWidget *gears;
 	GtkWidget *search;
 	GtkWidget *searchbar;
+	GPtrArray LitosFileList;
 };
 
 G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW);
@@ -96,6 +97,8 @@ litos_app_window_init (LitosAppWindow *win)
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
 		G_BINDING_BIDIRECTIONAL);
+
+	g_object_unref(win->LitosFileList);
 }
 
 static void
