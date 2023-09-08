@@ -96,9 +96,9 @@ LitosFile * litos_file_new_tab(LitosAppWindow *win)
 	gtk_text_buffer_get_end_iter (file->buffer, &end_iter);
 	gtk_text_buffer_apply_tag (file->buffer, tag, &start_iter, &end_iter);
 
-	litos_app_window_set_file (win,tag);
-
 	litos_app_winddow_fileadd (win,file);
+
+	litos_app_window_set_file (win,tag);
 
 	return file;
 }
@@ -144,7 +144,7 @@ void litos_file_save(LitosAppWindow *win, GFile *gf)
 	g_free(contents);
 }
 
-GtkWidget * litos_file_get_scrolled(gconstpointer *file)
+GtkWidget * litos_file_get_scrolled(LitosFile *file)
 {
 	return file->scrolled;
 }

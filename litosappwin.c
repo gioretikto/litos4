@@ -166,7 +166,7 @@ void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *
 
 static gboolean func (gconstpointer a, gconstpointer scrolled_win)
 {
-	return litos_file_get_scrolled (a) == scrolled_win;
+	return litos_file_get_scrolled (LITOS_FILE(a)) == scrolled_win;
 }
 
 guint litos_app_window_search_file(LitosAppWindow *win)
@@ -180,7 +180,7 @@ guint litos_app_window_search_file(LitosAppWindow *win)
 	return index;
 }
 
-void litos_app_winddow_fileadd(LitosAppWindow *win, gconstpointer *file)
+void litos_app_winddow_fileadd(LitosAppWindow *win, LitosFile *file)
 {
 	g_ptr_array_add(&win->litosFileList, file);
 }
