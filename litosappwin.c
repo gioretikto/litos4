@@ -7,6 +7,7 @@
 GtkWidget* MyNewSourceview();
 
 LitosFile * litos_file_new(LitosAppWindow *win);
+GtkWidget * litos_file_get_scrolled(LitosFile *file);
 
 struct _LitosAppWindow
 {
@@ -165,7 +166,7 @@ void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *
 
 static gboolean func (gconstpointer a, gconstpointer scrolled_win)
 {
-	return LITOS_FILE(a)->scrolled == scrolled_win;
+	return litos_file_get_scrolled (a) == scrolled_win;
 }
 
 guint litos_app_window_search_file(LitosAppWindow *win)
@@ -177,4 +178,14 @@ guint litos_app_window_search_file(LitosAppWindow *win)
 	g_ptr_array_find_with_equal_func(&win->litosFileList, scrolled_win, func, &index);
 
 	return index;
+}
+
+void litos_app_winddow_fileadd(LitosAppWindow *win, gconstpointer *file)
+{
+	g_ptr_array_add(&win->litosFileList, file);
+}
+
+void litos_app_window_current_file(LitosAppWindow *win)
+{
+	win->litosFileList[litos_app_window_search_file(win)];
 }

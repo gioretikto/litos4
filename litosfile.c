@@ -6,6 +6,7 @@ GtkWidget* MyNewSourceview();
 void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag);
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename);
 int litos_app_window_search_file(LitosAppWindow *win);
+void litos_app_winddow_fileadd(LitosAppWindow *win, gconstpointer *file);
 
 struct _LitosFile
 {
@@ -96,7 +97,7 @@ LitosFile * litos_file_new_tab(LitosAppWindow *win)
 
 	litos_app_window_set_file (win,tag);
 
-	g_ptr_array_add(win->LitosFileList, file);
+	litos_app_winddow_fileadd (win,file);
 
 	return file;
 }
@@ -127,18 +128,22 @@ void litos_file_save(LitosAppWindow *win, GFile *gf)
 	GtkTextIter start_iter;
 	GtkTextIter end_iter;
 
-	LitosFile *current_file = win->litosFileList[litos_app_window_search_file(win)];
-	
-	current_file->filename = g_file_get_basename(gf);
-	gtk_text_buffer_get_bounds(buffer, &start_iter, &end_iter);
+	LitosFile *current_file = litos_app_window_current_file(win);
+
+	current_file->name = g_file_get_basename(gf);
+	gtk_text_buffer_get_bounds(current_file->buffer, &start_iter, &end_iter);
 	contents = gtk_text_buffer_get_text(current_file->buffer, &start_iter, &end_iter, TRUE);
 
 	if (g_file_replace_contents(gf, contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, NULL))
-		gtk_window_set_title(GTK_WINDOW(win), current_file->filename);
+		gtk_window_set_title(GTK_WINDOW(win), current_file->name);
 
-	else {
+	else
 		printf("error");
-	}
 
 	g_free(contents);
+}
+
+GtkWidget * litos_file_get_scrolled(gconstpointer *file)
+{
+	return file->scrolled;
 }
