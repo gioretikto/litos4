@@ -5,7 +5,7 @@
 GtkWidget* MyNewSourceview();
 void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag);
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename);
-GtkWidget * litos_app_window_get_child(LitosAppWindow *win);
+void litos_app_window_search_file(LitosAppWindow *win);
 
 struct _LitosFile
 {
@@ -96,6 +96,8 @@ LitosFile * litos_file_new_tab(LitosAppWindow *win)
 
 	litos_app_window_set_file (win,tag);
 
+	g_ptr_array_add(win->LitosFileList, file);
+
 	return file;
 }
 
@@ -122,25 +124,21 @@ void litos_file_save(LitosAppWindow *win, GFile *gf)
 {
 	GtkWidget *err_dialog;
 	char *contents;
-	gchar *filename;
 	GtkTextIter start_iter;
 	GtkTextIter end_iter;
 
-	GtkWidget *tab = litos_app_window_get_child (win);
-	GtkWidget *view = gtk_scrolled_window_get_child (GTK_SCROLLED_WINDOW (tab));
-	GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
-
-	filename = g_file_get_basename(gf);
+	LitosFile *current_file = litos_app_window_search_file(win);
+	
+	current_file->filename = g_file_get_basename(gf);
 	gtk_text_buffer_get_bounds(buffer, &start_iter, &end_iter);
-	contents = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, TRUE);
+	contents = gtk_text_buffer_get_text(current_file->buffer, &start_iter, &end_iter, TRUE);
 
 	if (g_file_replace_contents(gf, contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, NULL))
-		gtk_window_set_title(GTK_WINDOW(win), filename);
+		gtk_window_set_title(GTK_WINDOW(win), current_file->filename);
 
 	else {
 		printf("error");
 	}
 
-	g_free(filename);
 	g_free(contents);
 }

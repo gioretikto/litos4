@@ -17,7 +17,7 @@ struct _LitosAppWindow
 	GtkWidget *gears;
 	GtkWidget *search;
 	GtkWidget *searchbar;
-	GPtrArray LitosFileList;
+	GPtrArray litosFileList;
 };
 
 G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW);
@@ -146,6 +146,7 @@ void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag)
 
 GtkWidget * litos_app_window_get_child(LitosAppWindow *win)
 {
+
 	return gtk_stack_get_visible_child(GTK_STACK(win->stack));
 }
 
@@ -160,4 +161,12 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename)
 {
 	gtk_stack_add_titled (GTK_STACK (win->stack), scrolled, filename, filename);
+}
+
+void litos_app_window_search_file(LitosAppWindow *win)
+{
+	GtkWidget *scrolled_win = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+
+	//if scrolled_win == win->itos->litosFileList->scrolled ..
+	
 }
