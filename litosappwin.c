@@ -18,7 +18,7 @@ struct _LitosAppWindow
 	GtkWidget *gears;
 	GtkWidget *search;
 	GtkWidget *searchbar;
-	GPtrArray litosFileList;
+	GPtrArray *litosFileList;
 };
 
 G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW);
@@ -90,6 +90,7 @@ litos_app_window_init (LitosAppWindow *win)
 	g_object_unref (builder);
 
 	win->settings = g_settings_new ("org.gtk.litos");
+	win->litosFileList = g_ptr_array_new_full(0, g_object_unref);
 
 	g_settings_bind (win->settings, "transition",
 		win->stack, "transition-type",
@@ -98,8 +99,6 @@ litos_app_window_init (LitosAppWindow *win)
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
 		G_BINDING_BIDIRECTIONAL);
-
-	g_object_unref(&win->litosFileList);
 }
 
 static void
@@ -110,6 +109,8 @@ litos_app_window_dispose (GObject *object)
 	win = LITOS_APP_WINDOW (object);
 
 	g_clear_object (&win->settings);
+
+	g_ptr_array_unref(win->litosFileList);
 
 	G_OBJECT_CLASS (litos_app_window_parent_class)->dispose (object);
 }
@@ -175,17 +176,17 @@ guint litos_app_window_search_file(LitosAppWindow *win)
 
 	GtkWidget *scrolled_win = gtk_stack_get_visible_child(GTK_STACK(win->stack));
 
-	g_ptr_array_find_with_equal_func(&win->litosFileList, scrolled_win, func, &index);
+	g_ptr_array_find_with_equal_func(win->litosFileList, scrolled_win, func, &index);
 
 	return index;
 }
 
 void litos_app_winddow_fileadd(LitosAppWindow *win, LitosFile *file)
 {
-	g_ptr_array_add(&win->litosFileList, file);
+	g_ptr_array_add(win->litosFileList, file);
 }
 
 LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 {
-	return g_ptr_array_index(&win->litosFileList, litos_app_window_search_file(win));
+	return g_ptr_array_index(win->litosFileList, litos_app_window_search_file(win));
 }
