@@ -148,7 +148,6 @@ void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag)
 
 GtkWidget * litos_app_window_get_child(LitosAppWindow *win)
 {
-
 	return gtk_stack_get_visible_child(GTK_STACK(win->stack));
 }
 
@@ -163,6 +162,11 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename)
 {
 	gtk_stack_add_titled (GTK_STACK (win->stack), scrolled, filename, filename);
+}
+
+void litos_app_window_change_title(LitosAppWindow *win, char *filename)
+{
+	gtk_stack_page_set_title (gtk_stack_get_page(GTK_STACK(win->stack),litos_app_window_get_child(win)), filename);
 }
 
 static gboolean func (gconstpointer array_element, gconstpointer scrolled_win)
