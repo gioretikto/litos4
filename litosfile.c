@@ -5,7 +5,7 @@
 GtkWidget* MyNewSourceview();
 void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag);
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename);
-void litos_app_window_search_file(LitosAppWindow *win);
+int litos_app_window_search_file(LitosAppWindow *win);
 
 struct _LitosFile
 {
@@ -127,7 +127,7 @@ void litos_file_save(LitosAppWindow *win, GFile *gf)
 	GtkTextIter start_iter;
 	GtkTextIter end_iter;
 
-	LitosFile *current_file = litos_app_window_search_file(win);
+	LitosFile *current_file = win->litosFileList[litos_app_window_search_file(win)];
 	
 	current_file->filename = g_file_get_basename(gf);
 	gtk_text_buffer_get_bounds(buffer, &start_iter, &end_iter);

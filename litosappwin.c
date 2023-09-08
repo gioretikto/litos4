@@ -163,10 +163,18 @@ void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *
 	gtk_stack_add_titled (GTK_STACK (win->stack), scrolled, filename, filename);
 }
 
-void litos_app_window_search_file(LitosAppWindow *win)
+static gboolean func (gconstpointer a, gconstpointer scrolled_win)
 {
+	return LITOS_FILE(a)->scrolled == scrolled_win;
+}
+
+int litos_app_window_search_file(LitosAppWindow *win)
+{
+	guint* index;
+
 	GtkWidget *scrolled_win = gtk_stack_get_visible_child(GTK_STACK(win->stack));
 
-	//if scrolled_win == win->itos->litosFileList->scrolled ..
-	
+	g_ptr_array_find_with_equal_func(win->litosFileList, scrolled_win, func, &index);
+
+	return index;
 }
