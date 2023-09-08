@@ -7,6 +7,7 @@ void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag);
 void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename);
 int litos_app_window_search_file(LitosAppWindow *win);
 void litos_app_winddow_fileadd(LitosAppWindow *win, gconstpointer *file);
+LitosFile * litos_app_window_current_file(LitosAppWindow *win);
 
 struct _LitosFile
 {

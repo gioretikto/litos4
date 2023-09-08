@@ -185,7 +185,7 @@ void litos_app_winddow_fileadd(LitosAppWindow *win, gconstpointer *file)
 	g_ptr_array_add(&win->litosFileList, file);
 }
 
-void litos_app_window_current_file(LitosAppWindow *win)
+LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 {
-	win->litosFileList[litos_app_window_search_file(win)];
+	return g_ptr_array_index(&win->litosFileList, litos_app_window_search_file(win));
 }
