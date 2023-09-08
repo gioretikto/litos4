@@ -98,7 +98,7 @@ litos_app_window_init (LitosAppWindow *win)
 		win->searchbar, "search-mode-enabled",
 		G_BINDING_BIDIRECTIONAL);
 
-	g_object_unref(win->LitosFileList);
+	g_object_unref(win->litosFileList);
 }
 
 static void
@@ -174,7 +174,7 @@ int litos_app_window_search_file(LitosAppWindow *win)
 
 	GtkWidget *scrolled_win = gtk_stack_get_visible_child(GTK_STACK(win->stack));
 
-	g_ptr_array_find_with_equal_func(win->litosFileList, scrolled_win, func, &index);
+	g_ptr_array_find_with_equal_func(&win->litosFileList, scrolled_win, func, &index);
 
-	return index;
+	return &index;
 }
