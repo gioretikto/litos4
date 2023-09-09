@@ -75,7 +75,9 @@ LitosFile * litos_file_new_tab(LitosAppWindow *win)
 
 	LitosFile *file = litos_file_new(win);
 
-	file->name = g_strdup("Untitled");
+	static int file_index = 1;
+
+	file->name = g_strdup_printf("Untitled %d", file_index);
 
 	GtkTextIter start_iter, end_iter;
 
@@ -101,6 +103,8 @@ LitosFile * litos_file_new_tab(LitosAppWindow *win)
 	litos_app_winddow_fileadd (win,file);
 
 	litos_app_window_set_file (win,tag);
+
+	file_index++;
 
 	return file;
 }
