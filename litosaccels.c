@@ -44,6 +44,13 @@ open_activated(GSimpleAction *action, GVariant *parameter, gpointer app)
 	g_signal_connect (dialog, "response", G_CALLBACK (open_cb), win);
 }
 
+static void
+save(GSimpleAction *action, GVariant *parameter, gpointer app)
+{
+	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+	litos_file_save (win, NULL);
+}
+
 static void save_dialog (GtkWidget *dialog, gint response, gpointer win)
 {
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
@@ -129,6 +136,7 @@ void setAccels (GApplication *app)
 		{"preferences", preferences_activated, NULL, NULL, NULL },
 		{"open", open_activated, NULL, NULL, NULL},
 		{"new", new_file, NULL, NULL, NULL},
+		{"save", save, NULL, NULL, NULL, {0,0,0}},
 		{"save_as", save_as_dialog, NULL, NULL, NULL, {0,0,0}},
 		{"close", close_activated, NULL, NULL, NULL},
 		{"quit", quit_activated, NULL, NULL, NULL }

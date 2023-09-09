@@ -195,3 +195,9 @@ LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 {
 	return g_ptr_array_index(win->litosFileList, litos_app_window_search_file(win));
 }
+
+void litos_app_winddow_set_visible_child(LitosAppWindow *win, GtkWidget *scrolled)
+{
+	gtk_stack_set_visible_child(GTK_STACK (win->stack), scrolled);
+
+}
