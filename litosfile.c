@@ -123,6 +123,7 @@ void litos_file_load (LitosAppWindow *win, GFile *gf)
 
 	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, NULL))
 	{
+		printf("OK");
 		gtk_text_buffer_set_text (file->buffer, contents, length);
 		litos_app_window_change_title(win, file->name);
 		g_free (contents);
