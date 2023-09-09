@@ -140,7 +140,7 @@ void litos_file_load (LitosAppWindow *win, GFile *gf)
 
 void litos_file_save(LitosFile *file)
 {
-	if (file != NULL)
+	if (file->gfile != NULL)
 	{
 		GtkWidget *err_dialog;
 		char *contents;
