@@ -8,6 +8,8 @@ void litos_file_load (LitosAppWindow *win, GFile *gf);
 LitosFile * litos_file_new_tab(LitosAppWindow *win);
 void litos_app_window_remove_child(LitosAppWindow *win);
 void litos_file_save(LitosAppWindow *win, GFile *gf);
+void litos_app_window_save(LitosAppWindow *app);
+void litos_app_window_save_as(LitosAppWindow *app);
 
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
@@ -47,41 +49,14 @@ open_activated(GSimpleAction *action, GVariant *parameter, gpointer app)
 static void
 save(GSimpleAction *action, GVariant *parameter, gpointer app)
 {
-	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-	litos_file_save (win, NULL);
+	litos_app_window_save(app);
 }
 
-static void save_dialog (GtkWidget *dialog, gint response, gpointer win)
+
+static void
+save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer app)
 {
-	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
-
-	if (response == GTK_RESPONSE_ACCEPT)
-	{
-		g_autoptr (GFile) file = gtk_file_chooser_get_file(chooser);
-		litos_file_save (win, file);
-	}
-
-	g_object_unref(dialog);
-}
-
-static void save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer app)
-{
-	GtkWidget *dialog = gtk_file_chooser_dialog_new ("Save File",
-		                                  NULL,
-		                                  GTK_FILE_CHOOSER_ACTION_SAVE,
-		                                 ("_Cancel"),
-		                                  GTK_RESPONSE_CANCEL,
-		                                 ("_Save"),
-		                                  GTK_RESPONSE_ACCEPT,
-		                                  NULL);
-
-	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-
-	gtk_window_set_transient_for(GTK_WINDOW(dialog), win);
-
-	gtk_widget_show(dialog);
-
-	g_signal_connect (dialog, "response", G_CALLBACK (save_dialog), win);
+	litos_app_window_save_as(app);
 }
 
 static void

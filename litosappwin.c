@@ -8,6 +8,9 @@ GtkWidget* MyNewSourceview();
 
 LitosFile * litos_file_new(LitosAppWindow *win);
 GtkWidget * litos_file_get_scrolled(LitosFile *file);
+GFile *litos_file_get_file(LitosFile* file);
+void litos_file_save(LitosFile *file);
+void litos_file_save_as(LitosFile* file, GFile *new_file);
 
 struct _LitosAppWindow
 {
@@ -196,8 +199,60 @@ LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 	return g_ptr_array_index(win->litosFileList, litos_app_window_search_file(win));
 }
 
+LitosFile *litos_app_window_get_current_file(LitosAppWindow *app)
+{
+	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+	return litos_app_window_current_file(LITOS_APP_WINDOW(win));
+}
+
 void litos_app_winddow_set_visible_child(LitosAppWindow *win, GtkWidget *scrolled)
 {
 	gtk_stack_set_visible_child(GTK_STACK (win->stack), scrolled);
+}
 
+void lito_app_window_save_dialog (GtkWidget *dialog, gint response, gpointer app)
+{
+	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
+
+	if (response == GTK_RESPONSE_ACCEPT)
+	{
+		g_autoptr (GFile) file = gtk_file_chooser_get_file(chooser);
+		litos_file_save_as (litos_app_window_get_current_file(app), file);
+	}
+
+	g_object_unref(dialog);
+}
+
+void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer app)
+{
+	GtkWidget *dialog = gtk_file_chooser_dialog_new ("Save File",
+		                                  NULL,
+		                                  GTK_FILE_CHOOSER_ACTION_SAVE,
+		                                 ("_Cancel"),
+		                                  GTK_RESPONSE_CANCEL,
+		                                 ("_Save"),
+		                                  GTK_RESPONSE_ACCEPT,
+		                                  NULL);
+
+	gtk_widget_show(dialog);
+
+	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_dialog), app);
+}
+
+void litos_app_window_save(LitosAppWindow *app)
+{
+	LitosFile* file = litos_app_window_get_current_file(app);
+
+	if (litos_file_get_file(file) == NULL)
+		litos_app_window_save_as_dialog(NULL, NULL, app);
+	else
+	{
+		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+		litos_file_save(file);
+	}
+}
+
+void litos_app_window_save_as(LitosAppWindow *app)
+{
+	litos_app_window_save_as_dialog(NULL, NULL, app);
 }
