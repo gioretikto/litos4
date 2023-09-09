@@ -150,7 +150,7 @@ void litos_file_save(LitosFile *file)
 	contents = gtk_text_buffer_get_text(file->buffer, &start_iter, &end_iter, TRUE);
 
 	if (g_file_replace_contents(file->gfile, contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, &error))
-		litos_app_window_change_title(win, file->name);
+		;;
 
 	else
 	{

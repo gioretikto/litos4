@@ -244,7 +244,12 @@ void litos_app_window_save(LitosAppWindow *app)
 	LitosFile* file = litos_app_window_get_current_file(app);
 
 	if (litos_file_get_file(file) == NULL)
+	{
 		litos_app_window_save_as_dialog(NULL, NULL, app);
+		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+		litos_app_window_change_title(LITOS_APP_WINDOW(win), file->name);
+	}
+
 	else
 	{
 		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
