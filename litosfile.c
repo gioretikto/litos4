@@ -140,22 +140,25 @@ void litos_file_load (LitosAppWindow *win, GFile *gf)
 
 void litos_file_save(LitosFile *file)
 {
-	GtkWidget *err_dialog;
-	char *contents;
-	GtkTextIter start_iter;
-	GtkTextIter end_iter;
-	GError *error = NULL;
-
-	gtk_text_buffer_get_bounds(file->buffer, &start_iter, &end_iter);
-	contents = gtk_text_buffer_get_text(file->buffer, &start_iter, &end_iter, TRUE);
-
-	if (!g_file_replace_contents(file->gfile, contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, &error))
+	if (file != NULL)
 	{
-		g_error("%s\n", error->message);
-		g_clear_error(&error);
-	}
+		GtkWidget *err_dialog;
+		char *contents;
+		GtkTextIter start_iter;
+		GtkTextIter end_iter;
+		GError *error = NULL;
 
-	g_free(contents);
+		gtk_text_buffer_get_bounds(file->buffer, &start_iter, &end_iter);
+		contents = gtk_text_buffer_get_text(file->buffer, &start_iter, &end_iter, TRUE);
+
+		if (!g_file_replace_contents(file->gfile, contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, &error))
+		{
+			g_error("%s\n", error->message);
+			g_clear_error(&error);
+		}
+
+		g_free(contents);
+	}
 }
 
 void litos_file_save_as(LitosFile* file, GFile *new_file)
