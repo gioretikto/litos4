@@ -11,6 +11,7 @@ GtkWidget * litos_file_get_scrolled(LitosFile *file);
 GFile *litos_file_get_file(LitosFile* file);
 void litos_file_save(LitosFile *file);
 void litos_file_save_as(LitosFile* file, GFile *new_file);
+gchar *litos_file_get_name(LitosFile *file);
 
 struct _LitosAppWindow
 {
@@ -210,14 +211,17 @@ void litos_app_winddow_set_visible_child(LitosAppWindow *win, GtkWidget *scrolle
 	gtk_stack_set_visible_child(GTK_STACK (win->stack), scrolled);
 }
 
-void lito_app_window_save_dialog (GtkWidget *dialog, gint response, gpointer app)
+void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer app)
 {
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
 
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
-		g_autoptr (GFile) file = gtk_file_chooser_get_file(chooser);
-		litos_file_save_as (litos_app_window_get_current_file(app), file);
+		LitosFile *file = litos_app_window_get_current_file(app);
+		g_autoptr (GFile) gfile = gtk_file_chooser_get_file(chooser);
+		litos_file_save_as (file, gfile);
+		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+		litos_app_window_change_title(LITOS_APP_WINDOW(win), litos_file_get_name(file));
 	}
 
 	g_object_unref(dialog);
@@ -234,20 +238,24 @@ void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter
 		                                  GTK_RESPONSE_ACCEPT,
 		                                  NULL);
 
+	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), win);
+
 	gtk_widget_show(dialog);
 
-	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_dialog), app);
+	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), app);
 }
 
 void litos_app_window_save(LitosAppWindow *app)
 {
-	LitosFile* file = litos_app_window_get_current_file(app);
+	LitosFile *file = litos_app_window_get_current_file(app);
 
 	if (litos_file_get_file(file) == NULL)
 	{
 		litos_app_window_save_as_dialog(NULL, NULL, app);
 		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-		litos_app_window_change_title(LITOS_APP_WINDOW(win), file->name);
+		litos_app_window_change_title(LITOS_APP_WINDOW(win), litos_file_get_name(file));
 	}
 
 	else

@@ -149,10 +149,7 @@ void litos_file_save(LitosFile *file)
 	gtk_text_buffer_get_bounds(file->buffer, &start_iter, &end_iter);
 	contents = gtk_text_buffer_get_text(file->buffer, &start_iter, &end_iter, TRUE);
 
-	if (g_file_replace_contents(file->gfile, contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, &error))
-		;;
-
-	else
+	if (!g_file_replace_contents(file->gfile, contents, strlen(contents), NULL, TRUE, G_FILE_CREATE_NONE, NULL, NULL, &error))
 	{
 		g_error("%s\n", error->message);
 		g_clear_error(&error);
@@ -164,6 +161,7 @@ void litos_file_save(LitosFile *file)
 void litos_file_save_as(LitosFile* file, GFile *new_file)
 {
 	file->gfile = new_file;
+	g_free (file->name);
 	file->name = g_file_get_basename(new_file);
 	litos_file_save(file);
 }
@@ -176,4 +174,9 @@ GtkWidget * litos_file_get_scrolled(LitosFile *file)
 GFile *litos_file_get_file(LitosFile* file)
 {
 	return file->gfile;
+}
+
+gchar *litos_file_get_name(LitosFile *file)
+{
+	return file->name;
 }
