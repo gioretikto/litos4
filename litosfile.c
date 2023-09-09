@@ -113,6 +113,7 @@ void litos_file_load (LitosAppWindow *win, GFile *gf)
 {
 	char *contents;
 	gsize length;
+	GError *error = NULL;
 
 	LitosFile *file = litos_file_new_tab(win);
 
@@ -121,12 +122,18 @@ void litos_file_load (LitosAppWindow *win, GFile *gf)
 	g_free (file->name);
 	file->name = g_file_get_basename(gf);
 
-	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, NULL))
+	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, &error))
 	{
-		printf("OK");
+		printf("OK\n");
 		gtk_text_buffer_set_text (file->buffer, contents, length);
 		litos_app_window_change_title(win, file->name);
 		g_free (contents);
+	}
+
+	else
+	{
+		g_error("%s\n", error->message);
+		g_clear_error(&error);
 	}
 }
 
