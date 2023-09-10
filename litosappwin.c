@@ -9,7 +9,7 @@ GtkWidget* MyNewSourceview();
 LitosFile * litos_file_new(LitosAppWindow *win);
 GtkWidget * litos_file_get_scrolled(LitosFile *file);
 GFile *litos_file_get_gfile(LitosFile* file);
-void litos_file_save(LitosFile *file);
+gboolean litos_file_save(LitosFile *file, GError *error);
 void litos_file_save_as(LitosFile* file, GFile *new_file);
 gchar *litos_file_get_name(LitosFile *file);
 GtkWidget * litos_file_get_view(LitosFile *file);
@@ -234,15 +234,26 @@ void litos_app_window_save(LitosAppWindow *win)
 {
 	LitosFile *file = litos_app_window_get_current_file(win);
 
+	char *filename = litos_file_get_name(file);
+
 	if (litos_file_get_gfile(file) == NULL)
 	{
 		litos_app_window_save_as_dialog(NULL, NULL, win);
 
-		litos_app_window_change_title(win, litos_file_get_name(file));
+		litos_app_window_change_title(win, filename);
 	}
 
 	else
-		litos_file_save(file);
+	{
+		GError *error = NULL;
+		if (litos_file_save(file,error))
+		{
+			GtkWidget *message_dialog;
+			message_dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "ERROR : Can't save %s.", filename);
+			gtk_widget_show(message_dialog);
+		}
+	}
 }
 
 void litos_app_window_save_as(LitosAppWindow *win)

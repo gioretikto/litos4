@@ -40,14 +40,14 @@ litos_app_startup (GApplication *app)
 
 	G_APPLICATION_CLASS (litos_app_parent_class)->startup (app);
 
-	/*GdkDisplay *display = gdk_display_get_default ();
+	GdkDisplay *display = gdk_display_get_default ();
 	GtkCssProvider *provider = gtk_css_provider_new ();
 	gtk_css_provider_load_from_path (provider, "litos.css");
 
 	gtk_style_context_add_provider_for_display (display,
 				GTK_STYLE_PROVIDER (provider),
 				GTK_STYLE_PROVIDER_PRIORITY_USER);
-	g_object_unref (provider);*/
+	g_object_unref (provider);
 }
 
 static void
