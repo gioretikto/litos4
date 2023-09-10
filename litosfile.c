@@ -79,7 +79,7 @@ LitosFile * litos_file_set(char *filename, GFile *gf)
 	return file;
 }
 
-void litos_file_load (LitosFile *file, GError *error)
+gboolean litos_file_load (LitosFile *file, GError *error)
 {
 	char *contents;
 	gsize length;
@@ -88,10 +88,11 @@ void litos_file_load (LitosFile *file, GError *error)
 	{
 		gtk_text_buffer_set_text (file->buffer, contents, length);
 		g_free (contents);
+		return TRUE;
 	}
 
 	else
-		printf("Error\n");
+		return FALSE;
 }
 
 gboolean litos_file_save(LitosFile *file, GError *error)

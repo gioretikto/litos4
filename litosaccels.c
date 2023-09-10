@@ -4,7 +4,7 @@
 #include "litosappprefs.h"
 #include "litosfile.h"
 
-void litos_file_load (LitosFile *file);
+gboolean litos_file_load (LitosFile *file, GError *error);
 
 void litos_app_window_remove_child(LitosAppWindow *win);
 void litos_app_window_save(LitosAppWindow *app);
@@ -15,11 +15,20 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
+		GError *error = NULL;
 		GFile *gfile = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
 
 		LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
 
-		litos_file_load(litos_app_window_new_tab(lwin,gfile));
+		if (litos_file_load(litos_app_window_new_tab(lwin,gfile),error))
+		{
+			GtkWidget *message_dialog;
+			char *filename = g_file_get_basename(gfile);
+			message_dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "ERROR : Can't load %s.\n %s", filename, error->message);
+			gtk_widget_show(message_dialog);
+			g_error_free(error);
+		}
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
