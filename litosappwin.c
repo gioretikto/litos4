@@ -15,6 +15,7 @@ gchar *litos_file_get_name(LitosFile *file);
 GtkWidget * litos_file_get_view(LitosFile *file);
 GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
 LitosFile * litos_file_set(char *filename, GFile *gf);
+gboolean litos_file_get_saved_status(LitosFile *file);
 
 struct _LitosAppWindow
 {
@@ -29,6 +30,7 @@ struct _LitosAppWindow
 };
 
 G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW);
+
 
 static void
 close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
@@ -144,25 +146,6 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-GtkWidget * litos_app_window_get_child(LitosAppWindow *win)
-{
-	return gtk_stack_get_visible_child(GTK_STACK(win->stack));
-}
-
-void litos_app_window_remove_child(LitosAppWindow *win)
-{
-	GtkWidget * child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
-
-	if (child != NULL)
-		gtk_stack_remove(GTK_STACK(win->stack), child);	
-}
-
-void litos_app_window_change_title(LitosAppWindow *win, char *filename)
-{
-	gtk_stack_page_set_title (gtk_stack_get_page(GTK_STACK(win->stack),litos_app_window_get_child(win)), filename);
-	printf("filename is: %s", filename);
-}
-
 static gboolean func (gconstpointer array_element, gconstpointer scrolled_win)
 {
 	return litos_file_get_scrolled ((LITOS_FILE((void*)array_element))) == scrolled_win;
@@ -184,6 +167,68 @@ LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 	return g_ptr_array_index(win->litosFileList, litos_app_window_search_file(win));
 }
 
+GtkWidget * litos_app_window_get_child(LitosAppWindow *win)
+{
+	return gtk_stack_get_visible_child(GTK_STACK(win->stack));
+}
+
+gboolean litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpointer window)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+	GtkWidget *scrolled_win = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+	LitosFile *file = litos_app_window_current_file(win);
+
+	switch (response)
+	{
+		case  GTK_RESPONSE_ACCEPT:
+			litos_file_save (file, NULL);
+
+		case GTK_RESPONSE_CANCEL:
+			return TRUE;
+
+		case GTK_RESPONSE_REJECT:
+			gtk_stack_remove(GTK_STACK(win->stack), scrolled_win);
+			gtk_window_destroy (GTK_WINDOW (dialog));
+			return false;
+	}
+
+	gtk_window_destroy (GTK_WINDOW (dialog));
+}
+
+void litos_app_window_remove_child(LitosAppWindow *win)
+{
+	GtkWidget *scrolled_win = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+
+	if (scrolled_win != NULL)
+	{
+		LitosFile *file = litos_app_window_current_file(win);
+
+		if (litos_file_get_saved_status(file))
+			gtk_stack_remove(GTK_STACK(win->stack), scrolled_win);
+
+		else
+		{
+			GtkWidget *dialog;
+
+			dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
+				      GTK_BUTTONS_NONE, "Save changes to document %s before closing?", litos_file_get_name(file));
+
+			gtk_dialog_add_buttons (GTK_DIALOG(dialog), "Close without Saving", GTK_RESPONSE_REJECT,
+				                                      "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT,  NULL);
+
+			gtk_widget_show(dialog);
+
+			g_signal_connect (dialog, "response", G_CALLBACK (litos_app_window_saveornot_at_close), win);
+		}
+	}
+}
+
+void litos_app_window_change_title(LitosAppWindow *win, char *filename)
+{
+	gtk_stack_page_set_title (gtk_stack_get_page(GTK_STACK(win->stack),litos_app_window_get_child(win)), filename);
+	printf("filename is: %s", filename);
+}
+
 LitosFile *litos_app_window_get_current_file(LitosAppWindow *win)
 {
 	return litos_app_window_current_file(win);
@@ -203,7 +248,6 @@ void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer w
 		LitosFile *file = litos_app_window_get_current_file(win);
 		g_autoptr (GFile) gfile = gtk_file_chooser_get_file(chooser);
 
-		printf("GFile: %p\n", (void*)gfile); fflush(stdout);
 		litos_file_save_as (file, gfile);
 
 		litos_app_window_change_title(LITOS_APP_WINDOW(win), litos_file_get_name(file));

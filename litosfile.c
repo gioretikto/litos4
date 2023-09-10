@@ -3,6 +3,7 @@
 #include "litosfile.h"
 
 GtkWidget* MyNewSourceview();
+void highlight_buffer(GtkTextBuffer *buffer, char *filename);
 
 struct _LitosFile
 {
@@ -62,6 +63,18 @@ LitosFile *litos_file_new()
 	return g_object_new (LITOS_TYPE_FILE, NULL);
 }
 
+void litos_file_monitor_change (GObject *gobject, GParamSpec *pspec, gpointer userData)	/* Function called when the file gets modified */
+{
+	(void)gobject;
+
+	(void)pspec;
+
+	LitosFile *file = (LitosFile*)userData;
+
+	if (file->saved == TRUE)
+		file->saved = FALSE;
+}
+
 LitosFile * litos_file_set(char *filename, GFile *gf)
 {
 	LitosFile *file = litos_file_new();
@@ -76,6 +89,8 @@ LitosFile * litos_file_set(char *filename, GFile *gf)
 
 	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
 
+	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(file->view)), "notify::text", G_CALLBACK (litos_file_monitor_change), file);
+
 	return file;
 }
 
@@ -87,6 +102,7 @@ gboolean litos_file_load (LitosFile *file, GError *error)
 	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, &error))
 	{
 		gtk_text_buffer_set_text (file->buffer, contents, length);
+		highlight_buffer(file->buffer, file->name);
 		g_free (contents);
 		return TRUE;
 	}
@@ -113,7 +129,10 @@ gboolean litos_file_save(LitosFile *file, GError *error)
 		}
 
 		else
+		{
+			file->saved = TRUE;
 			g_free(contents);
+		}
 	}
 
 	return TRUE;
@@ -153,4 +172,12 @@ gchar *litos_file_get_name(LitosFile *file)
 GtkTextBuffer *litos_file_get_buffer(LitosFile *file)
 {
 	return file->buffer;
+}
+
+gboolean litos_file_get_saved_status(LitosFile *file)
+{
+	if (file->saved == TRUE)
+		return TRUE;
+	else
+		return FALSE;
 }
