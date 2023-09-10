@@ -1,2 +1,3 @@
 *.o
 resourcers.c
+resources.c
