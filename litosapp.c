@@ -5,7 +5,8 @@
 #include "litosfile.h"
 
 void setAccels (GApplication *app);
-void litos_file_load (LitosAppWindow *win, GFile *gf);
+gboolean litos_file_load (LitosFile *file, GError *error);
+LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
 
 struct _LitosApp
 {
@@ -70,6 +71,7 @@ litos_app_open (GApplication  *app,
 {
 	GList *windows;
 	LitosAppWindow *win;
+	GError *error = NULL;
 	int i;
 
 	windows = gtk_application_get_windows (GTK_APPLICATION (app));
@@ -80,7 +82,17 @@ litos_app_open (GApplication  *app,
 		win = litos_app_window_new (LITOS_APP (app));
 
 	for (i = 0; i < n_files; i++)
-		litos_file_load (win, files[i]);
+	{
+		if (litos_file_load(litos_app_window_new_tab(win,files[i]),error))
+		{
+			GtkWidget *message_dialog;
+			char *filename = g_file_get_basename(files[i]);
+			message_dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE, "ERROR : Can't load %s.\n %s", filename, error->message);
+			gtk_widget_show(message_dialog);
+			g_error_free(error);
+		}
+	}
 
 	gtk_window_set_title (GTK_WINDOW (win), "Litos");
 	gtk_window_maximize (GTK_WINDOW (win));

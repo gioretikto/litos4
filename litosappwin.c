@@ -209,7 +209,7 @@ void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer w
 		litos_app_window_change_title(LITOS_APP_WINDOW(win), litos_file_get_name(file));
 	}
 
-	g_object_unref(dialog);
+	gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
 void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer win)
@@ -246,7 +246,8 @@ void litos_app_window_save(LitosAppWindow *win)
 	else
 	{
 		GError *error = NULL;
-		if (litos_file_save(file,error))
+
+		if (!litos_file_save(file,error))
 		{
 			GtkWidget *message_dialog;
 			message_dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,

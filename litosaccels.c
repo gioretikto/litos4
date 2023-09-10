@@ -20,7 +20,7 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 
 		LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
 
-		if (litos_file_load(litos_app_window_new_tab(lwin,gfile),error))
+		if (!litos_file_load(litos_app_window_new_tab(lwin,gfile),error))
 		{
 			GtkWidget *message_dialog;
 			char *filename = g_file_get_basename(gfile);

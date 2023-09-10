@@ -1,4 +1,4 @@
-CC ?= gcc -ggdb3
+CC ?= gcc
 PKGCONFIG = $(shell which pkg-config)
 CFLAGS = $(shell $(PKGCONFIG) --cflags gtk4 gtksourceview-5)
 LIBS = $(shell $(PKGCONFIG) --libs gtk4 gtksourceview-5)
