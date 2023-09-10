@@ -250,8 +250,9 @@ void litos_app_window_save(LitosAppWindow *win)
 		{
 			GtkWidget *message_dialog;
 			message_dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-			GTK_BUTTONS_CLOSE, "ERROR : Can't save %s.", filename);
+			GTK_BUTTONS_CLOSE, "ERROR : Can't save %s.\n %s", filename, error->message);
 			gtk_widget_show(message_dialog);
+			g_error_free(error);
 		}
 	}
 }
