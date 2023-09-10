@@ -4,20 +4,22 @@
 #include "litosappprefs.h"
 #include "litosfile.h"
 
-void litos_file_load (LitosAppWindow *win, GFile *gf);
-LitosFile * litos_file_new_tab(LitosAppWindow *win);
+void litos_file_load (LitosFile *file);
+
 void litos_app_window_remove_child(LitosAppWindow *win);
-void litos_file_save(LitosAppWindow *win, GFile *gf);
 void litos_app_window_save(LitosAppWindow *app);
 void litos_app_window_save_as(LitosAppWindow *app);
+LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
 
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
-		GFile *file = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
+		GFile *gfile = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
 
-		litos_file_load(LITOS_APP_WINDOW(win), file);	
+		LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
+
+		litos_file_load(litos_app_window_new_tab(lwin,gfile));
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
@@ -49,14 +51,15 @@ open_activated(GSimpleAction *action, GVariant *parameter, gpointer app)
 static void
 save(GSimpleAction *action, GVariant *parameter, gpointer app)
 {
-	litos_app_window_save(app);
+	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+	litos_app_window_save(LITOS_APP_WINDOW (win));
 }
-
 
 static void
 save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer app)
 {
-	litos_app_window_save_as(app);
+	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+	litos_app_window_save_as(LITOS_APP_WINDOW(win));
 }
 
 static void
@@ -85,10 +88,8 @@ new_file (GSimpleAction *action,
                 GVariant      *parameter,
                 gpointer       app)
 {
-	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
-
-	LitosAppWindow *win = LITOS_APP_WINDOW(window);
-	litos_file_new_tab(win);
+	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+	litos_app_window_new_tab(LITOS_APP_WINDOW(win), NULL);
 }
 
 static void

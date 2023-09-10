@@ -12,6 +12,9 @@ GFile *litos_file_get_file(LitosFile* file);
 void litos_file_save(LitosFile *file);
 void litos_file_save_as(LitosFile* file, GFile *new_file);
 gchar *litos_file_get_name(LitosFile *file);
+GtkWidget * litos_file_get_view(LitosFile *file);
+GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
+LitosFile * litos_file_set(char *filename, GFile *gf);
 
 struct _LitosAppWindow
 {
@@ -71,7 +74,7 @@ search_text_changed (GtkEntry	*entry,
 
 static void
 visible_child_changed (GObject	*stack,
-			GParamSpec	*pspec,
+			GParamSpec *pspec,
 			LitosAppWindow *win)
 {
 	if (gtk_widget_in_destruction (GTK_WIDGET (stack)))
@@ -141,15 +144,6 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag)
-{
-	gtk_widget_set_sensitive (win->search, TRUE);
-
-	g_settings_bind (win->settings, "font",
-			tag, "font",
-			G_SETTINGS_BIND_DEFAULT);
-}
-
 GtkWidget * litos_app_window_get_child(LitosAppWindow *win)
 {
 	return gtk_stack_get_visible_child(GTK_STACK(win->stack));
@@ -159,13 +153,8 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 {
 	GtkWidget * child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
 
-	if(child != NULL)
+	if (child != NULL)
 		gtk_stack_remove(GTK_STACK(win->stack), child);	
-}
-
-void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename)
-{
-	gtk_stack_add_titled (GTK_STACK (win->stack), scrolled, filename, filename);
 }
 
 void litos_app_window_change_title(LitosAppWindow *win, char *filename)
@@ -190,20 +179,14 @@ guint litos_app_window_search_file(LitosAppWindow *win)
 	return index;
 }
 
-void litos_app_winddow_fileadd(LitosAppWindow *win, LitosFile *file)
-{
-	g_ptr_array_add(win->litosFileList, file);
-}
-
 LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 {
 	return g_ptr_array_index(win->litosFileList, litos_app_window_search_file(win));
 }
 
-LitosFile *litos_app_window_get_current_file(LitosAppWindow *app)
+LitosFile *litos_app_window_get_current_file(LitosAppWindow *win)
 {
-	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-	return litos_app_window_current_file(LITOS_APP_WINDOW(win));
+	return litos_app_window_current_file(win);
 }
 
 void litos_app_winddow_set_visible_child(LitosAppWindow *win, GtkWidget *scrolled)
@@ -211,23 +194,25 @@ void litos_app_winddow_set_visible_child(LitosAppWindow *win, GtkWidget *scrolle
 	gtk_stack_set_visible_child(GTK_STACK (win->stack), scrolled);
 }
 
-void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer app)
+void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
 {
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
 
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
-		LitosFile *file = litos_app_window_get_current_file(app);
+		LitosFile *file = litos_app_window_get_current_file(win);
 		g_autoptr (GFile) gfile = gtk_file_chooser_get_file(chooser);
+
+		printf("GFile: %p\n", (void*)gfile); fflush(stdout);
 		litos_file_save_as (file, gfile);
-		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+
 		litos_app_window_change_title(LITOS_APP_WINDOW(win), litos_file_get_name(file));
 	}
 
 	g_object_unref(dialog);
 }
 
-void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer app)
+void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer win)
 {
 	GtkWidget *dialog = gtk_file_chooser_dialog_new ("Save File",
 		                                  NULL,
@@ -238,34 +223,81 @@ void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter
 		                                  GTK_RESPONSE_ACCEPT,
 		                                  NULL);
 
-	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), win);
 
 	gtk_widget_show(dialog);
 
-	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), app);
+	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), win);
 }
 
-void litos_app_window_save(LitosAppWindow *app)
+void litos_app_window_save(LitosAppWindow *win)
 {
-	LitosFile *file = litos_app_window_get_current_file(app);
+	LitosFile *file = litos_app_window_get_current_file(win);
 
 	if (litos_file_get_file(file) == NULL)
 	{
-		litos_app_window_save_as_dialog(NULL, NULL, app);
-		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-		litos_app_window_change_title(LITOS_APP_WINDOW(win), litos_file_get_name(file));
+		litos_app_window_save_as_dialog(NULL, NULL, win);
+
+		litos_app_window_change_title(win, litos_file_get_name(file));
 	}
 
 	else
-	{
-		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
 		litos_file_save(file);
-	}
 }
 
 void litos_app_window_save_as(LitosAppWindow *app)
 {
 	litos_app_window_save_as_dialog(NULL, NULL, app);
+}
+
+LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
+{
+	static int file_index = 1;
+
+	char *filename;
+
+	if (gf == NULL) /* at Ctrl+N*/
+	{
+		filename = g_strdup_printf("Untitled %d", file_index);
+		file_index++;
+	}
+
+	else /* we're loading a file */
+		filename = g_file_get_basename(gf);
+
+	GtkTextTag *tag;
+
+	GtkTextIter start_iter, end_iter;
+
+	LitosFile *file = litos_file_set(filename,gf);
+
+	GtkWidget *scrolled = litos_file_get_scrolled(file);
+
+	GtkWidget *view = litos_file_get_view(file);
+
+	GtkTextBuffer *buffer = litos_file_get_buffer(file);
+
+	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scrolled), view);
+
+	gtk_stack_add_titled (GTK_STACK (win->stack), scrolled, filename, filename);
+
+	g_ptr_array_add(win->litosFileList, file);
+
+	litos_app_winddow_set_visible_child(win, scrolled);
+
+	litos_app_window_change_title(win, filename);
+
+	gtk_widget_set_sensitive (win->search, TRUE);
+
+	tag = gtk_text_buffer_create_tag (litos_file_get_buffer(file), NULL, NULL);
+
+	gtk_text_buffer_get_start_iter (buffer, &start_iter);
+	gtk_text_buffer_get_end_iter (buffer, &end_iter);
+	gtk_text_buffer_apply_tag (buffer, tag, &start_iter, &end_iter);
+
+	g_settings_bind (win->settings, "font",
+			tag, "font",
+			G_SETTINGS_BIND_DEFAULT);
+
+	return file;
 }

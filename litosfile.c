@@ -3,14 +3,6 @@
 #include "litosfile.h"
 
 GtkWidget* MyNewSourceview();
-void litos_app_window_set_file (LitosAppWindow *win, GtkTextTag *tag);
-void litos_app_window_add_title(LitosAppWindow *win, GtkWidget *scrolled, char *filename);
-int litos_app_window_search_file(LitosAppWindow *win);
-void litos_app_winddow_fileadd(LitosAppWindow *win, LitosFile *file);
-LitosFile * litos_app_window_current_file(LitosAppWindow *win);
-GtkWidget * litos_app_window_get_child(LitosAppWindow *win);
-void litos_app_window_change_title(LitosAppWindow *win, char *filename);
-void litos_app_winddow_set_visible_child(LitosAppWindow *win, GtkWidget *scrolled);
 
 struct _LitosFile
 {
@@ -65,69 +57,37 @@ litos_file_class_init (LitosFileClass *class)
 	G_OBJECT_CLASS (class)->dispose = litos_file_dispose;
 }
 
-LitosFile *litos_file_new(LitosAppWindow *win)
+LitosFile *litos_file_new()
 {
 	return g_object_new (LITOS_TYPE_FILE, NULL);
 }
 
-LitosFile * litos_file_new_tab(LitosAppWindow *win)
+LitosFile * litos_file_set(char *filename, GFile *gf)
 {
-	GtkTextTag *tag;
+	LitosFile *file = litos_file_new();
 
-	LitosFile *file = litos_file_new(win);
-
-	static int file_index = 1;
-
-	file->name = g_strdup_printf("Untitled %d", file_index);
-
-	GtkTextIter start_iter, end_iter;
-
+	file->name = filename;
+	file->gfile = gf;
 	file->scrolled = gtk_scrolled_window_new ();
-
 	file->view = MyNewSourceview();
 
 	gtk_widget_set_hexpand (file->scrolled, TRUE);
 	gtk_widget_set_vexpand (file->scrolled, TRUE);
 
-	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (file->scrolled), file->view);
-
-	litos_app_window_add_title(win, file->scrolled, file->name);
-
 	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
-
-	tag = gtk_text_buffer_create_tag (file->buffer, NULL, NULL);
-
-	gtk_text_buffer_get_start_iter (file->buffer, &start_iter);
-	gtk_text_buffer_get_end_iter (file->buffer, &end_iter);
-	gtk_text_buffer_apply_tag (file->buffer, tag, &start_iter, &end_iter);
-
-	litos_app_winddow_fileadd (win,file);
-
-	litos_app_window_set_file (win,tag);
-
-	file_index++;
 
 	return file;
 }
 
-void litos_file_load (LitosAppWindow *win, GFile *gf)
+void litos_file_load (LitosFile *file)
 {
 	char *contents;
 	gsize length;
 	GError *error = NULL;
 
-	LitosFile *file = litos_file_new_tab(win);
-
-	file->gfile = gf;
-
-	g_free (file->name);
-	file->name = g_file_get_basename(gf);
-
 	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, &error))
 	{
 		gtk_text_buffer_set_text (file->buffer, contents, length);
-		litos_app_winddow_set_visible_child(win, file->scrolled);
-		litos_app_window_change_title(win, file->name);
 		g_free (contents);
 	}
 
@@ -163,6 +123,9 @@ void litos_file_save(LitosFile *file)
 
 void litos_file_save_as(LitosFile* file, GFile *new_file)
 {
+	if (new_file != NULL)
+		g_object_ref(new_file);
+
 	file->gfile = new_file;
 	g_free (file->name);
 	file->name = g_file_get_basename(new_file);
@@ -174,6 +137,11 @@ GtkWidget * litos_file_get_scrolled(LitosFile *file)
 	return file->scrolled;
 }
 
+GtkWidget * litos_file_get_view(LitosFile *file)
+{
+	return file->view;
+}
+
 GFile *litos_file_get_file(LitosFile* file)
 {
 	return file->gfile;
@@ -182,4 +150,9 @@ GFile *litos_file_get_file(LitosFile* file)
 gchar *litos_file_get_name(LitosFile *file)
 {
 	return file->name;
+}
+
+GtkTextBuffer *litos_file_get_buffer(LitosFile *file)
+{
+	return file->buffer;
 }
