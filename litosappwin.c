@@ -8,7 +8,7 @@ GtkWidget* MyNewSourceview();
 
 LitosFile * litos_file_new(LitosAppWindow *win);
 GtkWidget * litos_file_get_scrolled(LitosFile *file);
-GFile *litos_file_get_file(LitosFile* file);
+GFile *litos_file_get_gfile(LitosFile* file);
 void litos_file_save(LitosFile *file);
 void litos_file_save_as(LitosFile* file, GFile *new_file);
 gchar *litos_file_get_name(LitosFile *file);
@@ -234,7 +234,7 @@ void litos_app_window_save(LitosAppWindow *win)
 {
 	LitosFile *file = litos_app_window_get_current_file(win);
 
-	if (litos_file_get_file(file) == NULL)
+	if (litos_file_get_gfile(file) == NULL)
 	{
 		litos_app_window_save_as_dialog(NULL, NULL, win);
 
@@ -245,9 +245,9 @@ void litos_app_window_save(LitosAppWindow *win)
 		litos_file_save(file);
 }
 
-void litos_app_window_save_as(LitosAppWindow *app)
+void litos_app_window_save_as(LitosAppWindow *win)
 {
-	litos_app_window_save_as_dialog(NULL, NULL, app);
+	litos_app_window_save_as_dialog(NULL, NULL, win);
 }
 
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)

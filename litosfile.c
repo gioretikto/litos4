@@ -142,7 +142,7 @@ GtkWidget * litos_file_get_view(LitosFile *file)
 	return file->view;
 }
 
-GFile *litos_file_get_file(LitosFile* file)
+GFile *litos_file_get_gfile(LitosFile* file)
 {
 	return file->gfile;
 }
