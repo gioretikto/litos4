@@ -82,6 +82,7 @@ LitosFile * litos_file_set(struct Page *page)
 	file->gfile = page->gf;
 	file->scrolled = page->scrolled;
 	file->view = MyNewSourceview();
+	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
 
 	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(file->view)), "notify::text", G_CALLBACK (litos_file_monitor_change), file);
 
