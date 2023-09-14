@@ -42,16 +42,6 @@ close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
 	gtk_notebook_remove_page(win->notebook, gtk_notebook_get_current_page (win->notebook));
 }
 
-GtkSourceView* currentTabSourceView(LitosAppWindow *win)
-{
-	GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_notebook_get_nth_page(
-		win->notebook,
-		gtk_notebook_get_current_page (win->notebook)
-	)));
-
-	return GTK_SOURCE_VIEW(gtk_bin_get_child(GTK_BIN(g_list_nth_data(children, 0))));
-}
-
 static void
 search_text_changed (GtkEntry	*entry,
                      LitosAppWindow *win)
@@ -109,10 +99,6 @@ litos_app_window_init (LitosAppWindow *win)
 	win->settings = g_settings_new ("org.gtk.litos");
 	win->litosFileList = g_ptr_array_new_full(0, g_object_unref);
 
-	g_settings_bind (win->settings, "transition",
-		win->notebook, "transition-type",
-		G_SETTINGS_BIND_DEFAULT);
-
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
 		G_BINDING_BIDIRECTIONAL);
@@ -144,7 +130,7 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, searchbar);
 
-	//gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);
+	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), visible_child_changed);
 }
 
@@ -359,4 +345,11 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 			G_SETTINGS_BIND_DEFAULT);
 
 	return file;
+}
+
+GtkSourceView* currentTabSourceView(LitosAppWindow *win)
+{
+	LitosFile *file = litos_app_window_current_file(win);
+
+	return GTK_SOURCE_VIEW(litos_file_get_view);
 }

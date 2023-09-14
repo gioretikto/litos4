@@ -68,10 +68,6 @@ LitosFile *litos_file_new()
 
 void litos_file_monitor_change (GObject *gobject, GParamSpec *pspec, gpointer userData)	/* Function called when the file gets modified */
 {
-	(void)gobject;
-
-	(void)pspec;
-
 	LitosFile *file = (LitosFile*)userData;
 
 	if (file->saved == TRUE)
