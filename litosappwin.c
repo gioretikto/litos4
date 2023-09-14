@@ -1,28 +1,30 @@
 #include <gtk/gtk.h>
+#include <gtksourceview/gtksource.h>
 
 #include "litosapp.h"
 #include "litosappwin.h"
 #include "litosfile.h"
+#include "page.h"
 
-GtkWidget* MyNewSourceview();
-
-LitosFile * litos_file_new(LitosAppWindow *win);
-GtkWidget * litos_file_get_scrolled(LitosFile *file);
 GFile *litos_file_get_gfile(LitosFile* file);
 gboolean litos_file_save(LitosFile *file, GError *error);
 void litos_file_save_as(LitosFile* file, GFile *new_file);
 gchar *litos_file_get_name(LitosFile *file);
 GtkWidget * litos_file_get_view(LitosFile *file);
 GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
-LitosFile * litos_file_set(char *filename, GFile *gf);
+LitosFile * litos_file_set(struct Page *page);
 gboolean litos_file_get_saved_status(LitosFile *file);
+GtkWidget * litos_file_get_tabbox(LitosFile *file);
+
+GtkWidget* MyNewSourceview();
+GtkSourceView* currentTabSourceView(LitosAppWindow *win);
 
 struct _LitosAppWindow
 {
 	GtkApplicationWindow parent;
 
 	GSettings *settings;
-	GtkWidget *stack;
+	GtkNotebook *notebook;
 	GtkWidget *gears;
 	GtkWidget *search;
 	GtkWidget *searchbar;
@@ -37,11 +39,17 @@ close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
 
-	GtkWidget *child = gtk_stack_get_visible_child(GTK_STACK(win->stack));
-	g_print("ctrl-w pressed\n");
-	printf("ptr = %p\n", (void *)child);
-	if (child != NULL)
-		gtk_stack_remove(GTK_STACK(win->stack), child);
+	gtk_notebook_remove_page(win->notebook, gtk_notebook_get_current_page (win->notebook));
+}
+
+GtkSourceView* currentTabSourceView(LitosAppWindow *win)
+{
+	GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_notebook_get_nth_page(
+		win->notebook,
+		gtk_notebook_get_current_page (win->notebook)
+	)));
+
+	return GTK_SOURCE_VIEW(gtk_bin_get_child(GTK_BIN(g_list_nth_data(children, 0))));
 }
 
 static void
@@ -49,8 +57,6 @@ search_text_changed (GtkEntry	*entry,
                      LitosAppWindow *win)
 {
 	const char *text;
-	GtkWidget *tab;
-	GtkWidget *view;
 	GtkTextBuffer *buffer;
 	GtkTextIter start, match_start, match_end;
 
@@ -59,27 +65,29 @@ search_text_changed (GtkEntry	*entry,
 	if (text[0] == '\0')
 		return;
 
-	tab = gtk_stack_get_visible_child (GTK_STACK (win->stack));
-	view = gtk_scrolled_window_get_child (GTK_SCROLLED_WINDOW (tab));
-	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
+	GtkSourceView *view = currentTabSourceView(win);
+
+	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(view));
 
 	/* Very simple-minded search implementation */
+
 	gtk_text_buffer_get_start_iter (buffer, &start);
+
 	if (gtk_text_iter_forward_search (&start, text, GTK_TEXT_SEARCH_CASE_INSENSITIVE,
 			&match_start, &match_end, NULL))
 	{
 		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
-		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW (view), &match_start,
+		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
 				0.0, FALSE, 0.0, 0.0);
 	}
 }
 
 static void
-visible_child_changed (GObject	*stack,
+visible_child_changed (GObject	*notebook,
 			GParamSpec *pspec,
 			LitosAppWindow *win)
 {
-	if (gtk_widget_in_destruction (GTK_WIDGET (stack)))
+	if (gtk_widget_in_destruction (GTK_WIDGET (notebook)))
 		return;
 
 	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (win->searchbar), FALSE);
@@ -102,7 +110,7 @@ litos_app_window_init (LitosAppWindow *win)
 	win->litosFileList = g_ptr_array_new_full(0, g_object_unref);
 
 	g_settings_bind (win->settings, "transition",
-		win->stack, "transition-type",
+		win->notebook, "transition-type",
 		G_SETTINGS_BIND_DEFAULT);
 
 	g_object_bind_property (win->search, "active",
@@ -131,12 +139,12 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 
 	gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (class),
 						"/org/gtk/litos/window.ui");
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, stack);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, notebook);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, gears);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, searchbar);
 
-	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);
+	//gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), visible_child_changed);
 }
 
@@ -146,18 +154,18 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-static gboolean func (gconstpointer array_element, gconstpointer scrolled_win)
+static gboolean func (gconstpointer array_element, gconstpointer tabbox)
 {
-	return litos_file_get_scrolled ((LITOS_FILE((void*)array_element))) == scrolled_win;
+	return litos_file_get_tabbox ((LITOS_FILE((void*)array_element))) == tabbox;
 }
 
 guint litos_app_window_search_file(LitosAppWindow *win)
 {
 	guint index;
 
-	GtkWidget *scrolled_win = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+	GtkWidget *tabbox = gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page ((win->notebook)));
 
-	g_ptr_array_find_with_equal_func(win->litosFileList, scrolled_win, func, &index);
+	g_ptr_array_find_with_equal_func(win->litosFileList, tabbox, func, &index);
 
 	return index;
 }
@@ -169,26 +177,25 @@ LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 
 GtkWidget * litos_app_window_get_child(LitosAppWindow *win)
 {
-	return gtk_stack_get_visible_child(GTK_STACK(win->stack));
+	return gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page ((win->notebook)));
 }
 
 gboolean litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpointer window)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
-	GtkWidget *scrolled_win = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+
 	LitosFile *file = litos_app_window_current_file(win);
 
 	switch (response)
 	{
-		case  GTK_RESPONSE_ACCEPT:
+		case GTK_RESPONSE_ACCEPT:
 			litos_file_save (file, NULL);
 
 		case GTK_RESPONSE_CANCEL:
 			return TRUE;
 
 		case GTK_RESPONSE_REJECT:
-			gtk_stack_remove(GTK_STACK(win->stack), scrolled_win);
-			gtk_window_destroy (GTK_WINDOW (dialog));
+			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
 			return false;
 	}
 
@@ -197,14 +204,14 @@ gboolean litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, g
 
 void litos_app_window_remove_child(LitosAppWindow *win)
 {
-	GtkWidget *scrolled_win = gtk_stack_get_visible_child(GTK_STACK(win->stack));
+	GtkWidget *tabbox = gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page ((win->notebook)));
 
-	if (scrolled_win != NULL)
+	if (tabbox != NULL)
 	{
 		LitosFile *file = litos_app_window_current_file(win);
 
 		if (litos_file_get_saved_status(file))
-			gtk_stack_remove(GTK_STACK(win->stack), scrolled_win);
+			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
 
 		else
 		{
@@ -223,20 +230,14 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 	}
 }
 
-void litos_app_window_change_title(LitosAppWindow *win, char *filename)
+/*void litos_app_window_change_title(LitosAppWindow *win, char *filename)
 {
-	gtk_stack_page_set_title (gtk_stack_get_page(GTK_STACK(win->stack),litos_app_window_get_child(win)), filename);
-	printf("filename is: %s", filename);
-}
+	gtk_stack_page_set_title (gtk_stack_get_page(GTK_STACK(win->stack), litos_app_window_get_child(win)), filename);
+}*/
 
 LitosFile *litos_app_window_get_current_file(LitosAppWindow *win)
 {
 	return litos_app_window_current_file(win);
-}
-
-void litos_app_winddow_set_visible_child(LitosAppWindow *win, GtkWidget *scrolled)
-{
-	gtk_stack_set_visible_child(GTK_STACK (win->stack), scrolled);
 }
 
 void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
@@ -250,7 +251,7 @@ void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer w
 
 		litos_file_save_as (file, gfile);
 
-		litos_app_window_change_title(LITOS_APP_WINDOW(win), litos_file_get_name(file));
+		//litos_app_window_change_title(LITOS_APP_WINDOW(win), litos_file_get_name(file));
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
@@ -271,7 +272,7 @@ void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter
 
 	gtk_widget_show(dialog);
 
-	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), win);
+	//g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), win);
 }
 
 void litos_app_window_save(LitosAppWindow *win)
@@ -284,7 +285,7 @@ void litos_app_window_save(LitosAppWindow *win)
 	{
 		litos_app_window_save_as_dialog(NULL, NULL, win);
 
-		litos_app_window_change_title(win, filename);
+		//litos_app_window_change_title(win, filename);
 	}
 
 	else
@@ -311,46 +312,47 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 {
 	static int file_index = 1;
 
-	char *filename;
+	struct Page page;
 
 	if (gf == NULL) /* at Ctrl+N*/
 	{
-		filename = g_strdup_printf("Untitled %d", file_index);
+		page.name = g_strdup_printf("Untitled %d", file_index);
 		file_index++;
 	}
 
 	else /* we're loading a file */
-		filename = g_file_get_basename(gf);
+		page.name = g_file_get_basename(gf);
 
 	GtkTextTag *tag;
 
 	GtkTextIter start_iter, end_iter;
 
-	LitosFile *file = litos_file_set(filename,gf);
+	GtkWidget *label = gtk_label_new(page.name);
 
-	GtkWidget *scrolled = litos_file_get_scrolled(file);
+	page.tabbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
+	page.scrolled = gtk_scrolled_window_new ();
+	page.view = MyNewSourceview();
+	page.buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (page.view));
 
-	GtkWidget *view = litos_file_get_view(file);
+	gtk_widget_set_hexpand (page.scrolled, TRUE);
+	gtk_widget_set_vexpand (page.scrolled, TRUE);
 
-	GtkTextBuffer *buffer = litos_file_get_buffer(file);
+	LitosFile *file = litos_file_set(&page);
 
-	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scrolled), view);
-
-	gtk_stack_add_titled (GTK_STACK (win->stack), scrolled, filename, filename);
-
+	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (page.scrolled), page.view);
+	gtk_box_append (GTK_BOX(page.tabbox), page.scrolled);
+	gtk_notebook_append_page_menu (win->notebook, page.tabbox, label, label);
 	g_ptr_array_add(win->litosFileList, file);
 
-	litos_app_winddow_set_visible_child(win, scrolled);
-
-	litos_app_window_change_title(win, filename);
+	//litos_app_window_change_title(win, page.name);
 
 	gtk_widget_set_sensitive (win->search, TRUE);
 
 	tag = gtk_text_buffer_create_tag (litos_file_get_buffer(file), NULL, NULL);
 
-	gtk_text_buffer_get_start_iter (buffer, &start_iter);
-	gtk_text_buffer_get_end_iter (buffer, &end_iter);
-	gtk_text_buffer_apply_tag (buffer, tag, &start_iter, &end_iter);
+	gtk_text_buffer_get_start_iter (page.buffer, &start_iter);
+	gtk_text_buffer_get_end_iter (page.buffer, &end_iter);
+	gtk_text_buffer_apply_tag (page.buffer, tag, &start_iter, &end_iter);
 
 	g_settings_bind (win->settings, "font",
 			tag, "font",

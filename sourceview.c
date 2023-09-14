@@ -1,6 +1,8 @@
 #include <gtk/gtk.h>
 #include <gtksourceview/gtksource.h>
 
+#include "litosappwin.h"
+
 GtkWidget* MyNewSourceview()
 {
 	GtkWidget *source_view;

@@ -43,14 +43,6 @@ litos_app_startup (GApplication *app)
 
 	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
 
-	/*GdkDisplay *display = gdk_display_get_default ();
-	GtkCssProvider *provider = gtk_css_provider_new ();
-	gtk_css_provider_load_from_path (provider, "litos.css");
-
-	gtk_style_context_add_provider_for_display (display,
-				GTK_STYLE_PROVIDER (provider),
-				GTK_STYLE_PROVIDER_PRIORITY_USER);
-	g_object_unref (provider);*/
 }
 
 static void

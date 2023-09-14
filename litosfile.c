@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 
 #include "litosfile.h"
+#include "page.h"
 
 GtkWidget* MyNewSourceview();
 void highlight_buffer(GtkTextBuffer *buffer, char *filename);
@@ -12,6 +13,8 @@ struct _LitosFile
 	GFile* gfile;
 
 	GtkWidget *scrolled;
+
+	GtkWidget* tabbox;
 
 	/*GtkSourceView*/
 
@@ -75,19 +78,14 @@ void litos_file_monitor_change (GObject *gobject, GParamSpec *pspec, gpointer us
 		file->saved = FALSE;
 }
 
-LitosFile * litos_file_set(char *filename, GFile *gf)
+LitosFile * litos_file_set(struct Page *page)
 {
 	LitosFile *file = litos_file_new();
 
-	file->name = filename;
-	file->gfile = gf;
-	file->scrolled = gtk_scrolled_window_new ();
+	file->name = page->name;
+	file->gfile = page->gf;
+	file->scrolled = page->scrolled;
 	file->view = MyNewSourceview();
-
-	gtk_widget_set_hexpand (file->scrolled, TRUE);
-	gtk_widget_set_vexpand (file->scrolled, TRUE);
-
-	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
 
 	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(file->view)), "notify::text", G_CALLBACK (litos_file_monitor_change), file);
 
@@ -149,11 +147,6 @@ void litos_file_save_as(LitosFile* file, GFile *new_file)
 	litos_file_save(file, NULL);
 }
 
-GtkWidget * litos_file_get_scrolled(LitosFile *file)
-{
-	return file->scrolled;
-}
-
 GtkWidget * litos_file_get_view(LitosFile *file)
 {
 	return file->view;
@@ -180,4 +173,9 @@ gboolean litos_file_get_saved_status(LitosFile *file)
 		return TRUE;
 	else
 		return FALSE;
+}
+
+GtkWidget * litos_file_get_tabbox(LitosFile *file)
+{
+	return file->tabbox;
 }

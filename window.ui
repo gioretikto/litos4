@@ -4,11 +4,6 @@
     <property name="title">Litos</property>
     <child type="titlebar">
       <object class="GtkHeaderBar" id="header">
-        <child type="title">
-          <object class="GtkStackSwitcher" id="tabs">
-            <property name="stack">stack</property>
-          </object>
-        </child>
         <child type="end">
           <object class="GtkMenuButton" id="gears">
             <property name="direction">none</property>
@@ -35,9 +30,8 @@
           </object>
         </child>
         <child>
-          <object class="GtkStack" id="stack">
-            <signal name="notify::visible-child" handler="visible_child_changed"/>
-          </object>
+	<object class="GtkNotebook">
+	</object>
         </child>
       </object>
     </child>
