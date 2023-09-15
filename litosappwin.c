@@ -319,6 +319,7 @@ static void changeLblColor(LitosAppWindow *win)
 	else
 		format = "<span color='black'>\%s</span>";
 
+	printf("ptr = %p\n", (void *)litos_file_get_lbl(file));
 	const char *markup = g_markup_printf_escaped (format, litos_file_get_name(file));
 	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
 	gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox(file), litos_file_get_lbl(file));
