@@ -294,6 +294,13 @@ void litos_app_window_save_as(LitosAppWindow *win)
 	litos_app_window_save_as_dialog(NULL, NULL, win);
 }
 
+GtkSourceView* currentTabSourceView(LitosAppWindow *win)
+{
+	LitosFile *file = litos_app_window_current_file(win);
+
+	return GTK_SOURCE_VIEW(litos_file_get_view);
+}
+
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 {
 	static int file_index = 1;
@@ -304,10 +311,14 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 	{
 		page.name = g_strdup_printf("Untitled %d", file_index);
 		file_index++;
+		page.gf = NULL;
 	}
 
 	else /* we're loading a file */
+	{
 		page.name = g_file_get_basename(gf);
+		page.gf = gf;
+	}
 
 	GtkTextTag *tag;
 
@@ -344,12 +355,7 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 			tag, "font",
 			G_SETTINGS_BIND_DEFAULT);
 
+	gtk_widget_grab_focus(GTK_WIDGET(currentTabSourceView(win)));
+
 	return file;
-}
-
-GtkSourceView* currentTabSourceView(LitosAppWindow *win)
-{
-	LitosFile *file = litos_app_window_current_file(win);
-
-	return GTK_SOURCE_VIEW(litos_file_get_view);
 }
