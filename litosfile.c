@@ -140,12 +140,16 @@ gboolean litos_file_save(LitosFile *file, GError *error)
 
 void litos_file_save_as(LitosFile* file, GFile *new_file)
 {
+	printf("ptr = %p\n", (LitosFile *)file);
+
 	if (new_file != NULL)
 		g_object_ref(new_file);
 
 	file->gfile = new_file;
+
 	g_free (file->name);
 	file->name = g_file_get_basename(new_file);
+
 	litos_file_save(file, NULL);
 }
 
@@ -169,7 +173,7 @@ GtkTextBuffer *litos_file_get_buffer(LitosFile *file)
 	return file->buffer;
 }
 
-gboolean litos_file_get_saved_status(LitosFile *file)
+gboolean litos_file_get_saved(LitosFile *file)
 {
 	if (file->saved == TRUE)
 		return TRUE;
@@ -185,4 +189,9 @@ GtkWidget * litos_file_get_tabbox(LitosFile *file)
 GtkWidget * litos_file_get_lbl(LitosFile *file)
 {
 	return file->lbl;
+}
+
+void litos_file_set_saved(LitosFile *file, gboolean status)
+{
+	file->saved = status;
 }

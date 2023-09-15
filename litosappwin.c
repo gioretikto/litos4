@@ -10,15 +10,16 @@ GFile *litos_file_get_gfile(LitosFile* file);
 gboolean litos_file_save(LitosFile *file, GError *error);
 void litos_file_save_as(LitosFile* file, GFile *new_file);
 gchar *litos_file_get_name(LitosFile *file);
-GtkWidget * litos_file_get_view(LitosFile *file);
-GtkWidget * litos_file_get_lbl(LitosFile *file);
 GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
 LitosFile * litos_file_set(struct Page *page);
-gboolean litos_file_get_saved_status(LitosFile *file);
+gboolean litos_file_get_saved(LitosFile *file);
+GtkWidget * litos_file_get_view(LitosFile *file);
+GtkWidget * litos_file_get_lbl(LitosFile *file);
 GtkWidget * litos_file_get_tabbox(LitosFile *file);
+void litos_file_set_saved(LitosFile *file, gboolean status);
 
+static GtkSourceView* currentTabSourceView(LitosAppWindow *win);
 GtkWidget* MyNewSourceview();
-GtkSourceView* currentTabSourceView(LitosAppWindow *win);
 
 struct _LitosAppWindow
 {
@@ -197,7 +198,7 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 	{
 		LitosFile *file = litos_app_window_current_file(win);
 
-		if (litos_file_get_saved_status(file))
+		if (litos_file_get_saved(file))
 			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
 
 		else
@@ -237,6 +238,8 @@ void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer w
 		g_autoptr (GFile) gfile = gtk_file_chooser_get_file(chooser);
 
 		litos_file_save_as (file, gfile);
+
+		litos_file_set_saved(file, TRUE);
 
 		gtk_label_set_text (GTK_LABEL(litos_file_get_lbl(file)),  litos_file_get_name(file));
 	}
@@ -295,11 +298,31 @@ void litos_app_window_save_as(LitosAppWindow *win)
 	litos_app_window_save_as_dialog(NULL, NULL, win);
 }
 
-GtkSourceView* currentTabSourceView(LitosAppWindow *win)
+static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 {
 	LitosFile *file = litos_app_window_current_file(win);
 
 	return GTK_SOURCE_VIEW(litos_file_get_view);
+}
+
+static void changeLblColor(LitosAppWindow *win)
+{
+	LitosFile* file = litos_app_window_current_file(win);
+
+	if (litos_file_get_saved(file) == TRUE)
+	{
+		const char *format = "<span color='red'>\%s</span>";
+		litos_file_set_saved(file, FALSE);
+
+		/*else
+			format = "<span color='black'>\%s</span>";*/
+
+		const char *markup = g_markup_printf_escaped (format, litos_file_get_name);
+
+		gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl), markup);
+
+		gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox, litos_file_get_lbl);
+	}
 }
 
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
@@ -356,6 +379,8 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 			G_SETTINGS_BIND_DEFAULT);
 
 	gtk_widget_grab_focus(GTK_WIDGET(page.view));
+
+	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(page.view), "notify::text", G_CALLBACK (changeLblColor), win));
 
 	return file;
 }
