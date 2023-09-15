@@ -14,6 +14,8 @@ struct _LitosFile
 
 	GtkWidget *scrolled;
 
+	GtkWidget *lbl;
+
 	GtkWidget* tabbox;
 
 	/*GtkSourceView*/
@@ -39,6 +41,8 @@ litos_file_init (LitosFile *file)
 	file->buffer = NULL;
 
 	file->name = NULL;
+
+	file->lbl = NULL;
 
 	file->saved = TRUE;
 
@@ -82,6 +86,7 @@ LitosFile * litos_file_set(struct Page *page)
 	file->gfile = page->gf;
 	file->scrolled = page->scrolled;
 	file->view = page->view;
+	file->lbl = page->lbl;
 	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
 
 	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(file->view)), "notify::text", G_CALLBACK (litos_file_monitor_change), file);
@@ -175,4 +180,9 @@ gboolean litos_file_get_saved_status(LitosFile *file)
 GtkWidget * litos_file_get_tabbox(LitosFile *file)
 {
 	return file->tabbox;
+}
+
+GtkWidget * litos_file_get_lbl(LitosFile *file)
+{
+	return file->lbl;
 }

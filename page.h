@@ -6,4 +6,5 @@ struct Page
 	char *name;
 	GFile *gf;
 	GtkWidget *view;
+	GtkWidget *lbl;
 };

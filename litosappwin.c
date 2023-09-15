@@ -11,6 +11,7 @@ gboolean litos_file_save(LitosFile *file, GError *error);
 void litos_file_save_as(LitosFile* file, GFile *new_file);
 gchar *litos_file_get_name(LitosFile *file);
 GtkWidget * litos_file_get_view(LitosFile *file);
+GtkWidget * litos_file_get_lbl(LitosFile *file);
 GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
 LitosFile * litos_file_set(struct Page *page);
 gboolean litos_file_get_saved_status(LitosFile *file);
@@ -237,7 +238,7 @@ void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer w
 
 		litos_file_save_as (file, gfile);
 
-		//litos_app_window_change_title(LITOS_APP_WINDOW(win), litos_file_get_name(file));
+		gtk_label_set_text (GTK_LABEL(litos_file_get_lbl(file)),  litos_file_get_name(file));
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
@@ -258,7 +259,7 @@ void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter
 
 	gtk_widget_show(dialog);
 
-	//g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), win);
+	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), win);
 }
 
 void litos_app_window_save(LitosAppWindow *win)
@@ -324,8 +325,7 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 
 	GtkTextIter start_iter, end_iter;
 
-	GtkWidget *label = gtk_label_new(page.name);
-
+	page.lbl = gtk_label_new(page.name);
 	page.tabbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
 	page.scrolled = gtk_scrolled_window_new ();
 	page.view = MyNewSourceview();
@@ -338,7 +338,7 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 
 	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (page.scrolled), page.view);
 	gtk_box_append (GTK_BOX(page.tabbox), page.scrolled);
-	gtk_notebook_append_page_menu (win->notebook, page.tabbox, label, label);
+	gtk_notebook_append_page_menu (win->notebook, page.tabbox, page.lbl, page.lbl);
 	g_ptr_array_add(win->litosFileList, file);
 
 	//litos_app_window_change_title(win, page.name);
@@ -355,7 +355,7 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 			tag, "font",
 			G_SETTINGS_BIND_DEFAULT);
 
-	gtk_widget_grab_focus(GTK_WIDGET(currentTabSourceView(win)));
+	gtk_widget_grab_focus(GTK_WIDGET(page.view));
 
 	return file;
 }
