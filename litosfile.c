@@ -70,14 +70,6 @@ LitosFile *litos_file_new()
 	return g_object_new (LITOS_TYPE_FILE, NULL);
 }
 
-void litos_file_monitor_change (GObject *gobject, GParamSpec *pspec, gpointer userData)	/* Function called when the file gets modified */
-{
-	LitosFile *file = (LitosFile*)userData;
-
-	if (file->saved == TRUE)
-		file->saved = FALSE;
-}
-
 LitosFile * litos_file_set(struct Page *page)
 {
 	LitosFile *file = litos_file_new();
@@ -88,8 +80,6 @@ LitosFile * litos_file_set(struct Page *page)
 	file->view = page->view;
 	file->lbl = page->lbl;
 	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
-
-	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(file->view)), "notify::text", G_CALLBACK (litos_file_monitor_change), file);
 
 	return file;
 }
