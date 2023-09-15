@@ -308,21 +308,28 @@ static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 static void changeLblColor(LitosAppWindow *win)
 {
 	LitosFile* file = litos_app_window_current_file(win);
+	const char *format;
 
 	if (litos_file_get_saved(file) == TRUE)
 	{
-		const char *format = "<span color='red'>\%s</span>";
+		format = "<span color='red'>\%s</span>";
 		litos_file_set_saved(file, FALSE);
-
-		/*else
-			format = "<span color='black'>\%s</span>";*/
-
-		const char *markup = g_markup_printf_escaped (format, litos_file_get_name(file));
-
-		gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl), markup);
-
-		gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox(file), litos_file_get_lbl(file));
 	}
+
+	else
+		format = "<span color='black'>\%s</span>";
+
+	const char *markup = g_markup_printf_escaped (format, litos_file_get_name(file));
+	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl), markup);
+	gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox(file), litos_file_get_lbl(file));
+}
+
+void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win)	/* Function called when the file gets modified */
+{
+	LitosFile* file = litos_app_window_current_file(win);
+	
+	if (litos_file_get_saved(file) == TRUE)
+		changeLblColor(win);
 }
 
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
@@ -380,7 +387,7 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 
 	gtk_widget_grab_focus(GTK_WIDGET(page.view));
 
-	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(page.view)), "notify::text", G_CALLBACK (changeLblColor), win);
+	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(page.view)), "notify::text", G_CALLBACK (monitor_change), win);
 
 	return file;
 }
