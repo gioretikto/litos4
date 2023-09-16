@@ -362,14 +362,11 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 	gtk_widget_set_hexpand (page->scrolled, TRUE);
 	gtk_widget_set_vexpand (page->scrolled, TRUE);
 
-	LitosFile *file = litos_file_set(page);
-
 	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (page->scrolled), page->view);
 	gtk_box_append (GTK_BOX(page->tabbox), page->scrolled);
 	gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->lbl, page->lbl);
-	g_ptr_array_add(win->litosFileList, file);
 
-	tag = gtk_text_buffer_create_tag (litos_file_get_buffer(file), NULL, NULL);
+	tag = gtk_text_buffer_create_tag (page->buffer, NULL, NULL);
 
 	gtk_text_buffer_get_start_iter (page->buffer, &start_iter);
 	gtk_text_buffer_get_end_iter (page->buffer, &end_iter);
@@ -380,6 +377,10 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 			G_SETTINGS_BIND_DEFAULT);
 
 	gtk_widget_grab_focus(GTK_WIDGET(page->view));
+
+	LitosFile *file = litos_file_set(page);
+
+	g_ptr_array_add(win->litosFileList, file);
 
 	return file;
 }
