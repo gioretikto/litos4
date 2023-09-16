@@ -228,11 +228,10 @@ static void changeLblColor(LitosAppWindow *win, const char *color)
 {
 	LitosFile* file = litos_app_window_current_file(win);
 	
-	char *format;
+	char format[31];
 
 	sprintf(format, "<span color='%s'>\%s</span>", color);
 
-	format = "<span color='red'>\%s</span>";
 	litos_file_set_saved(file, FALSE);
 
 	const char *markup = g_markup_printf_escaped (format, litos_file_get_name(file));
