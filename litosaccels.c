@@ -10,6 +10,9 @@ void litos_app_window_remove_child(LitosAppWindow *win);
 void litos_app_window_save(LitosAppWindow *app);
 void litos_app_window_save_as(LitosAppWindow *app);
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
+LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf);
+void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win);
+GtkWidget * litos_file_get_view(LitosFile *file);
 
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
@@ -20,7 +23,7 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 
 		LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
 
-		LitosFile *file = litos_app_window_new_tab(lwin,gfile);
+		LitosFile *file = litos_app_window_open(lwin,gfile);
 
 		if (!litos_file_load(file,error))
 		{
@@ -31,6 +34,9 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 			gtk_widget_show(message_dialog);
 			g_error_free(error);
 		}
+
+		else
+			g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(litos_file_get_view(file))), "notify::text", G_CALLBACK (monitor_change), win);
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));

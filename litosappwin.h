@@ -8,8 +8,5 @@
 G_DECLARE_FINAL_TYPE (LitosAppWindow, litos_app_window, LITOS, APP_WINDOW, GtkApplicationWindow)
 
 LitosAppWindow       *litos_app_window_new          (LitosApp *app);
-void                    litos_app_window_open         (LitosAppWindow *win,
-                                                         GFile            *file);
-
 
 #endif /* __LITOSAPPWIN_H */
