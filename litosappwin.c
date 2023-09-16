@@ -224,6 +224,22 @@ LitosFile *litos_app_window_get_current_file(LitosAppWindow *win)
 	return litos_app_window_current_file(win);
 }
 
+static void changeLblColor(LitosAppWindow *win, const char *color)
+{
+	LitosFile* file = litos_app_window_current_file(win);
+	
+	char *format;
+
+	sprintf(format, "<span color='%s'>\%s</span>", color);
+
+	format = "<span color='red'>\%s</span>";
+	litos_file_set_saved(file, FALSE);
+
+	const char *markup = g_markup_printf_escaped (format, litos_file_get_name(file));
+	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
+	gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox(file), litos_file_get_lbl(file));
+}
+
 void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
 {
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
@@ -268,11 +284,7 @@ void litos_app_window_save(LitosAppWindow *win)
 	char *filename = litos_file_get_name(file);
 
 	if (litos_file_get_gfile(file) == NULL)
-	{
 		litos_app_window_save_as_dialog(NULL, NULL, win);
-
-		//litos_app_window_change_title(win, filename);
-	}
 
 	else
 	{
@@ -286,6 +298,9 @@ void litos_app_window_save(LitosAppWindow *win)
 			gtk_widget_show(message_dialog);
 			g_error_free(error);
 		}
+
+		else
+			changeLblColor(win,"black");			
 	}
 }
 
@@ -301,28 +316,12 @@ static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 	return GTK_SOURCE_VIEW(litos_file_get_view);
 }
 
-static void redLblColor(LitosAppWindow *win)
-{
-	LitosFile* file = litos_app_window_current_file(win);
-	const char *format;
-
-	format = "<span color='red'>\%s</span>";
-	litos_file_set_saved(file, FALSE);
-
-	/*else
-		format = "<span color='black'>\%s</span>";*/
-
-	const char *markup = g_markup_printf_escaped (format, litos_file_get_name(file));
-	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
-	gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox(file), litos_file_get_lbl(file));
-}
-
 void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win)	/* Function called when the file gets modified */
 {
 	LitosFile* file = litos_app_window_current_file(win);
 	
 	if (litos_file_get_saved(file) == TRUE)
-		redLblColor(win);
+		changeLblColor(win, "red");
 }
 
 LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
