@@ -34,9 +34,6 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 			gtk_widget_show(message_dialog);
 			g_error_free(error);
 		}
-
-		else
-			g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(litos_file_get_view(file))), "notify::text", G_CALLBACK (monitor_change), win);
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));

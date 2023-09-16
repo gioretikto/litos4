@@ -77,6 +77,7 @@ LitosFile * litos_file_set(struct Page *page)
 	file->name = page->name;
 	file->gfile = page->gf;
 	file->scrolled = page->scrolled;
+	file->tabbox = page->tabbox;
 	file->view = page->view;
 	file->lbl = page->lbl;
 	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));

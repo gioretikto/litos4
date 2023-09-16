@@ -247,12 +247,9 @@ LitosFile *litos_app_window_get_current_file(LitosAppWindow *win)
 static void changeLblColor(LitosAppWindow *win, const char *color)
 {
 	LitosFile* file = litos_app_window_current_file(win);
-	
-	char format[31];
 
-	sprintf(format, "<span color='%s'>\%s</span>", color);
+	const char *markup = g_markup_printf_escaped ("<span color='%s'>\%s</span>", color, litos_file_get_name(file));
 
-	const char *markup = g_markup_printf_escaped (format, litos_file_get_name(file));
 	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
 	gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox(file), litos_file_get_lbl(file));
 }
@@ -317,7 +314,7 @@ void litos_app_window_save(LitosAppWindow *win)
 		}
 
 		else
-			changeLblColor(win,"black");			
+			changeLblColor(win,"white");			
 	}
 }
 
@@ -382,6 +379,8 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 
 	g_ptr_array_add(win->litosFileList, file);
 
+	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(page->view)), "notify::text", G_CALLBACK (monitor_change), win);
+
 	return file;
 }
 
@@ -408,8 +407,6 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 	page.gf = NULL;
 
 	LitosFile *file = litos_app_window_set_page(win,&page);
-
-	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(page.view)), "notify::text", G_CALLBACK (monitor_change), win);
 
 	return file;
 }
