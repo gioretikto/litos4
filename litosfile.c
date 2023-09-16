@@ -165,10 +165,7 @@ GtkTextBuffer *litos_file_get_buffer(LitosFile *file)
 
 gboolean litos_file_get_saved(LitosFile *file)
 {
-	if (file->saved == TRUE)
-		return TRUE;
-	else
-		return FALSE;
+	return file->saved;
 }
 
 GtkWidget * litos_file_get_tabbox(LitosFile *file)
