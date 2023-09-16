@@ -33,6 +33,12 @@ struct _LitosAppWindow
 	GPtrArray *litosFileList;
 };
 
+struct WinFile
+{
+	LitosAppWindow *win;
+	LitosFile *file;
+};
+
 G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
 
@@ -330,22 +336,21 @@ static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 	return GTK_SOURCE_VIEW(litos_file_get_view);
 }
 
-void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win)	/* Function called when the file gets modified */
+void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer userData)	/* Function called when the file gets modified */
 {
-	LitosFile* file = litos_app_window_current_file(win);
+	struct WinFile *winfile = (struct WinFile*)userData;
 
-	if (file == NULL)
-		return;
-	
-	if (litos_file_get_saved(file) == TRUE)
+	if (litos_file_get_saved(winfile->file) == TRUE)
 	{
-		changeLblColor(win, "red");
-		litos_file_set_saved(file, FALSE);
+		changeLblColor(winfile->win, "red");
+		litos_file_set_saved(winfile->file, FALSE);
 	}
 }
 
 LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 {
+	struct WinFile winfile;
+
 	GtkTextTag *tag;
 
 	GtkTextIter start_iter, end_iter;
@@ -369,6 +374,8 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 	gtk_text_buffer_get_end_iter (page->buffer, &end_iter);
 	gtk_text_buffer_apply_tag (page->buffer, tag, &start_iter, &end_iter);
 
+	gtk_notebook_set_tab_reorderable(win->notebook, page->tabbox, TRUE);
+
 	g_settings_bind (win->settings, "font",
 			tag, "font",
 			G_SETTINGS_BIND_DEFAULT);
@@ -379,7 +386,10 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 
 	g_ptr_array_add(win->litosFileList, file);
 
-	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(page->view)), "notify::text", G_CALLBACK (monitor_change), win);
+	winfile.win = win;
+	winfile.file = file;
+
+	g_signal_connect (gtk_text_view_get_buffer (GTK_TEXT_VIEW(page->view)), "notify::text", G_CALLBACK (monitor_change), &winfile);
 
 	return file;
 }
