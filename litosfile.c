@@ -28,7 +28,7 @@ struct _LitosFile
 	/*filename */
 	gchar *name;
 
-	_Bool saved;
+	gboolean saved;
 };
 
 G_DEFINE_TYPE (LitosFile, litos_file, G_TYPE_OBJECT)
@@ -130,8 +130,6 @@ gboolean litos_file_save(LitosFile *file, GError *error)
 
 void litos_file_save_as(LitosFile* file, GFile *new_file)
 {
-	printf("ptr = %p\n", (LitosFile *)file);
-
 	if (new_file != NULL)
 		g_object_ref(new_file);
 
