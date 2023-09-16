@@ -148,25 +148,45 @@ static gboolean func (gconstpointer array_element, gconstpointer tabbox)
 	return litos_file_get_tabbox ((LITOS_FILE((void*)array_element))) == tabbox;
 }
 
+
 guint litos_app_window_search_file(LitosAppWindow *win)
 {
 	guint index;
 
-	GtkWidget *tabbox = gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page ((win->notebook)));
+	gint current_page = gtk_notebook_get_current_page (win->notebook);
 
-	g_ptr_array_find_with_equal_func(win->litosFileList, tabbox, func, &index);
+	if (current_page == -1)
+		return -1;
 
-	return index;
+	else
+	{
+		GtkWidget *tabbox = gtk_notebook_get_nth_page (win->notebook, current_page);
+
+		if (g_ptr_array_find_with_equal_func(win->litosFileList, tabbox, func, &index))
+			return index;
+
+		else
+			return -1;
+	}
 }
 
 LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 {
-	return g_ptr_array_index(win->litosFileList, litos_app_window_search_file(win));
+	guint index = litos_app_window_search_file(win);
+
+	if (index == -1)
+	{
+		printf("The list is empty\n");
+		return NULL;
+	}
+
+	else
+		return g_ptr_array_index(win->litosFileList, index);
 }
 
 GtkWidget * litos_app_window_get_child(LitosAppWindow *win)
 {
-	return gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page ((win->notebook)));
+	return gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page (win->notebook));
 }
 
 gboolean litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpointer window)
@@ -231,8 +251,6 @@ static void changeLblColor(LitosAppWindow *win, const char *color)
 	char format[31];
 
 	sprintf(format, "<span color='%s'>\%s</span>", color);
-
-	litos_file_set_saved(file, FALSE);
 
 	const char *markup = g_markup_printf_escaped (format, litos_file_get_name(file));
 	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
@@ -318,9 +336,15 @@ static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win)	/* Function called when the file gets modified */
 {
 	LitosFile* file = litos_app_window_current_file(win);
+
+	if (file == NULL)
+		return;
 	
 	if (litos_file_get_saved(file) == TRUE)
+	{
 		changeLblColor(win, "red");
+		litos_file_set_saved(file, FALSE);
+	}
 }
 
 LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
