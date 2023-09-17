@@ -32,22 +32,24 @@ static void lbltoRed(LitosAppWindow *win, LitosFile* file)
 }
 
 
-static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpointer filw)
+static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpointer userdata)
 {
-	//LitosFile *file = LITOS_FILE(gobject);
+    LitosAppWindow *win = LITOS_APP_WINDOW(userdata);
+    LitosFile *file = LITOS_FILE(gobject);
 
-	if (litos_file_get_saved(file) == FALSE)
-		lbltoRed(win, file);
+    if (litos_file_get_saved(file) == FALSE)
+    {
+        lbltoRed(win, file);
+    }
 }
 
-static void open_cb (GtkWidget *dialog, gint response, gpointer app)
+static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
 		GError *error = NULL;
 		GFile *gfile = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
 
-		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
 		LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
 
 		LitosFile *file = litos_app_window_open(lwin,gfile);
@@ -61,9 +63,9 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer app)
 			gtk_widget_show(message_dialog);
 			g_error_free(error);
 		}
-		
+
 		else
-			g_object_connect(G_OBJECT(file->buffer), "notify::text", G_CALLBACK (_buffer_monitor_change), file);
+			g_object_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
@@ -89,7 +91,7 @@ open_activated(GSimpleAction *action, GVariant *parameter, gpointer app)
 
 	gtk_widget_show(dialog);
 
-	g_signal_connect (dialog, "response", G_CALLBACK (open_cb), app);
+	g_signal_connect (dialog, "response", G_CALLBACK (open_cb), win);
 }
 
 static void
