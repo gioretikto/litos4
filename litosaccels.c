@@ -13,14 +13,41 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf);
 void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win);
 GtkWidget * litos_file_get_view(LitosFile *file);
+GtkWidget * litos_file_get_tabbox(LitosFile *file);
+GtkWidget * litos_file_get_lbl(LitosFile *file);
+gboolean litos_file_get_saved(LitosFile *file);
+gchar *litos_file_get_name(LitosFile *file);
 
-static void open_cb (GtkWidget *dialog, gint response, gpointer win)
+gchar *litos_file_get_name(LitosFile *file);
+
+GtkNotebook * litos_app_win_get_nb(LitosAppWindow *win);
+
+static void lbltoRed(LitosAppWindow *win, LitosFile* file)
+{
+	const char *markup = g_markup_printf_escaped ("<span color='red'>\%s</span>", litos_file_get_name(file));
+
+	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
+
+	gtk_notebook_set_tab_label (litos_app_win_get_nb(win), litos_file_get_tabbox(file), litos_file_get_lbl(file));
+}
+
+
+static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpointer filw)
+{
+	//LitosFile *file = LITOS_FILE(gobject);
+
+	if (litos_file_get_saved(file) == FALSE)
+		lbltoRed(win, file);
+}
+
+static void open_cb (GtkWidget *dialog, gint response, gpointer app)
 {
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
 		GError *error = NULL;
 		GFile *gfile = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
 
+		GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
 		LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
 
 		LitosFile *file = litos_app_window_open(lwin,gfile);
@@ -34,6 +61,9 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 			gtk_widget_show(message_dialog);
 			g_error_free(error);
 		}
+		
+		else
+			g_object_connect(G_OBJECT(file->buffer), "notify::text", G_CALLBACK (_buffer_monitor_change), file);
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
@@ -59,7 +89,7 @@ open_activated(GSimpleAction *action, GVariant *parameter, gpointer app)
 
 	gtk_widget_show(dialog);
 
-	g_signal_connect (dialog, "response", G_CALLBACK (open_cb), win);
+	g_signal_connect (dialog, "response", G_CALLBACK (open_cb), app);
 }
 
 static void

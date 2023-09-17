@@ -85,6 +85,62 @@ LitosFile * litos_file_set(struct Page *page)
 	return file;
 }
 
+GtkWidget * litos_file_get_lbl(LitosFile *file)
+{
+	return file->lbl;
+}
+
+GtkWidget * litos_file_get_view(LitosFile *file)
+{
+	return file->view;
+}
+
+GFile *litos_file_get_gfile(LitosFile* file)
+{
+	return file->gfile;
+}
+
+gchar *litos_file_get_name(LitosFile *file)
+{
+	return file->name;
+}
+
+GtkTextBuffer *litos_file_get_buffer(LitosFile *file)
+{
+	return file->buffer;
+}
+
+gboolean litos_file_get_saved(LitosFile *file)
+{
+	return file->saved;
+}
+
+GtkWidget * litos_file_get_tabbox(LitosFile *file)
+{
+	return file->tabbox;
+}
+
+static void lblToBlack(LitosAppWindow *win, LitosFile* file)
+{
+	const char *markup = g_markup_printf_escaped ("<span color='black'>\%s</span>", litos_file_get_name(file));
+
+	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
+
+	gtk_notebook_set_tab_label (litos_app_win_get_nb(win), litos_file_get_tabbox(file), litos_file_get_lbl(file));
+}
+
+
+void litos_file_set_saved(LitosAppWindow *win, LitosFile *file)
+{
+	file->saved = TRUE;
+	lblToBlack (win,file);
+}
+
+void litos_file_set_unsaved(LitosFile *file)
+{
+	file->saved = FALSE;
+}
+
 gboolean litos_file_load (LitosFile *file, GError *error)
 {
 	char *contents;
@@ -140,44 +196,4 @@ void litos_file_save_as(LitosFile* file, GFile *new_file)
 	file->name = g_file_get_basename(new_file);
 
 	litos_file_save(file, NULL);
-}
-
-GtkWidget * litos_file_get_view(LitosFile *file)
-{
-	return file->view;
-}
-
-GFile *litos_file_get_gfile(LitosFile* file)
-{
-	return file->gfile;
-}
-
-gchar *litos_file_get_name(LitosFile *file)
-{
-	return file->name;
-}
-
-GtkTextBuffer *litos_file_get_buffer(LitosFile *file)
-{
-	return file->buffer;
-}
-
-gboolean litos_file_get_saved(LitosFile *file)
-{
-	return file->saved;
-}
-
-GtkWidget * litos_file_get_tabbox(LitosFile *file)
-{
-	return file->tabbox;
-}
-
-GtkWidget * litos_file_get_lbl(LitosFile *file)
-{
-	return file->lbl;
-}
-
-void litos_file_set_saved(LitosFile *file, gboolean status)
-{
-	file->saved = status;
 }
