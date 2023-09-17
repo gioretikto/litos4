@@ -64,7 +64,7 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 		}
 
 		else
-			g_object_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
+			g_signal_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
