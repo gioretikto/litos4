@@ -32,9 +32,8 @@ static void lbltoRed(LitosAppWindow *win, LitosFile* file)
 }
 
 
-static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpointer userdata)
+static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpointer win)
 {
-    LitosAppWindow *win = LITOS_APP_WINDOW(userdata);
     LitosFile *file = LITOS_FILE(gobject);
 
     if (litos_file_get_saved(file) == FALSE)
