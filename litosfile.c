@@ -60,10 +60,76 @@ litos_file_dispose (GObject *object)
 	G_OBJECT_CLASS (litos_file_parent_class)->dispose (object);
 }
 
+typedef enum
+{
+	PROP_SAVED = 1,
+	N_PROPERTIES
+
+} LitosFileProperty;
+
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+static void
+litos_file_set_property (GObject      *object,
+                          guint         property_id,
+                          const GValue *value,
+                          GParamSpec   *pspec)
+{
+	LitosFile *self = LITOS_FILE (object);
+
+	switch ((LitosFileProperty) property_id)
+	{
+		case PROP_SAVED:
+			self->saved = g_value_get_boolean (value);
+			break;
+
+		default:
+			/* We don't have any other property... */
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+			break;
+	}
+}
+
+static void
+litos_file_get_property (GObject    *object,
+                          guint       property_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
+{
+	LitosFile *self = LITOS_FILE (object);
+
+	switch ((LitosFileProperty) property_id)
+	{
+		case PROP_SAVED:
+			g_value_set_boolean (value, self->saved);
+			break;
+
+		default:
+			/* We don't have any other property... */
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+			break;
+	}
+}
+
 static void
 litos_file_class_init (LitosFileClass *class)
 {
 	G_OBJECT_CLASS (class)->dispose = litos_file_dispose;
+	GObjectClass *object_class = G_OBJECT_CLASS (class);
+
+	object_class->set_property = litos_file_set_property;
+	object_class->get_property = litos_file_get_property;
+
+	obj_properties[PROP_SAVED] =
+	    g_param_spec_string ("saved",
+		                 "Save",
+		                 "File status",
+		                 TRUE  /* default value */,
+		                 G_PARAM_READWRITE);
+
+	g_object_class_install_properties (object_class,
+				N_PROPERTIES,
+				obj_properties);
 }
 
 LitosFile *litos_file_new()
@@ -111,59 +177,11 @@ GtkWidget * litos_file_get_tabbox(LitosFile *file)
 	return file->tabbox;
 }
 
-typedef enum
+
+
+void litos_file_set_unsaved(GObject *buffer, GParamSpec *pspec, gpointer userData)
 {
-	PROP_SAVED = 1,
-	N_PROPERTIES
-
-} LitosFileProperty;
-
-static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
-
-static void
-litos_file_set_property (GObject      *object,
-                          guint         property_id,
-                          const GValue *value,
-                          GParamSpec   *pspec)
-{
-	LitosFile *self = LITOS_FILE (object);
-
-	switch ((LitosFileProperty) property_id)
-	{
-		case PROP_SAVED:
-			self->saved = g_value_get_boolean (value);
-			break;
-
-		default:
-			/* We don't have any other property... */
-			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-			break;
-	}
-}
-
-static void
-litos_file_get_property (GObject    *object,
-                          guint       property_id,
-                          GValue     *value,
-                          GParamSpec *pspec)
-{
-	LitosFile *self = LITOS_FILE (object);
-
-	switch ((LitosFileProperty) property_id)
-	{
-		case PROP_SAVED:
-			g_value_set_boolean (value, TRUE);
-			break;
-
-		default:
-			/* We don't have any other property... */
-			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-			break;
-	}
-}
-
-void litos_file_set_unsaved(LitosFile *file)
-{
+	LitosFile *file = (LitosFile*)userData;
 	file->saved = FALSE;
 	g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
 }
