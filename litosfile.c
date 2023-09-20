@@ -4,7 +4,7 @@
 #include "page.h"
 
 GtkWidget* MyNewSourceview();
-void highlight_buffer(GtkTextBuffer *buffer, char *filename);
+void highlight_buffer(GtkTextBuffer *buffer);
 void litos_file_set_unsaved(LitosFile *file);
 
 struct _LitosFile
@@ -215,7 +215,7 @@ gboolean litos_file_load (LitosFile *file, GError *error)
 	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, &error))
 	{
 		gtk_text_buffer_set_text (file->buffer, contents, length);
-		highlight_buffer(file->buffer, file->name);
+		highlight_buffer(file->buffer);
 		file->saved = TRUE;
 		g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
 		g_free (contents);
