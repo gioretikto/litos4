@@ -395,7 +395,6 @@ static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpoi
 	if (litos_file_get_saved(file) == FALSE)
 	{
 		lbltoColor(lwin, file, "red");
-		litos_file_set_unsaved(file);
 	}
 
 	else
