@@ -180,6 +180,8 @@ LitosFile * litos_file_set(struct Page *page)
 	file->lbl = page->lbl;
 	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
 
+	g_signal_connect (page->buffer, "notify::text", G_CALLBACK (litos_file_set_unsaved), file);
+
 	return file;
 }
 
