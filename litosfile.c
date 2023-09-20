@@ -124,7 +124,7 @@ litos_file_class_init (LitosFileClass *class)
 	    g_param_spec_string ("saved",
 		                 "Save",
 		                 "File status",
-		                 TRUE  /* default value */,
+		                 NULL  /* default value */,
 		                 G_PARAM_READWRITE);
 
 	g_object_class_install_properties (object_class,
@@ -177,12 +177,16 @@ GtkWidget * litos_file_get_tabbox(LitosFile *file)
 	return file->tabbox;
 }
 
-
-
-void litos_file_set_unsaved(GObject *buffer, GParamSpec *pspec, gpointer userData)
+void litos_file_set_unsaved(LitosFile *file)
 {
-	LitosFile *file = (LitosFile*)userData;
 	file->saved = FALSE;
+	g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
+}
+
+static void _buffer_monitor_change(GObject *gobject, GParamSpec *pspec, gpointer userdata)
+{
+	LitosFile *file = LITOS_FILE(userdata);
+	litos_file_set_unsaved(file);
 	g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
 }
 
@@ -198,7 +202,7 @@ LitosFile * litos_file_set(struct Page *page)
 	file->lbl = page->lbl;
 	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
 
-	g_signal_connect (page->buffer, "notify::text", G_CALLBACK (litos_file_set_unsaved), file);
+	g_signal_connect (page->buffer, "notify::text", G_CALLBACK (_buffer_monitor_change), file);
 
 	return file;
 }
