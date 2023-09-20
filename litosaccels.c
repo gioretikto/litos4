@@ -22,26 +22,6 @@ gchar *litos_file_get_name(LitosFile *file);
 
 GtkNotebook * litos_app_win_get_nb(LitosAppWindow *win);
 
-static void lbltoRed(LitosAppWindow *win, LitosFile* file)
-{
-	const char *markup = g_markup_printf_escaped ("<span color='red'>\%s</span>", litos_file_get_name(file));
-
-	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
-
-	gtk_notebook_set_tab_label (litos_app_win_get_nb(win), litos_file_get_tabbox(file), litos_file_get_lbl(file));
-}
-
-
-static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpointer win)
-{
-    LitosFile *file = LITOS_FILE(gobject);
-
-    if (litos_file_get_saved(file) == FALSE)
-    {
-        lbltoRed(win, file);
-    }
-}
-
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
 	if (response == GTK_RESPONSE_ACCEPT)
@@ -62,9 +42,6 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 			gtk_widget_show(message_dialog);
 			g_error_free(error);
 		}
-
-		else
-			g_signal_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));

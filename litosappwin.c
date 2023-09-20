@@ -16,8 +16,7 @@ gboolean litos_file_get_saved(LitosFile *file);
 GtkWidget * litos_file_get_view(LitosFile *file);
 GtkWidget * litos_file_get_lbl(LitosFile *file);
 GtkWidget * litos_file_get_tabbox(LitosFile *file);
-void litos_file_set_saved(LitosAppWindow *win, LitosFile *file);
-//void litos_file_set_unsaved(LitosFile *file)
+void litos_file_set_saved(LitosFile *file);
 
 static GtkSourceView* currentTabSourceView(LitosAppWindow *win);
 GtkWidget* MyNewSourceview();
@@ -192,13 +191,14 @@ static gboolean _litos_file_buffer_equal(gconstpointer array_element, gconstpoin
 
 guint litos_app_window_get_file_index_by_buffer(LitosAppWindow *win, GtkTextBuffer *buffer)
 {
-    guint index = -1;
+	guint index = -1;
 
-    if (g_ptr_array_find_with_equal_func(win->litosFileList, buffer,
-        _litos_file_buffer_equal, &index))
-        return index;
-    else
-        return -1;
+	if (g_ptr_array_find_with_equal_func(win->litosFileList, buffer,
+	        _litos_file_buffer_equal, &index))
+	return index;
+
+	else
+		return -1;
 }
 
 LitosFile *litos_app_window_get_file_by_buffer(LitosAppWindow *win, GtkTextBuffer *buffer)
@@ -221,7 +221,7 @@ gboolean litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, g
 	{
 		case GTK_RESPONSE_ACCEPT:
 			litos_file_save (file, NULL);
-			litos_file_set_saved(win,file);
+			litos_file_set_saved(file);
 
 		case GTK_RESPONSE_CANCEL:
 			return TRUE;
@@ -262,27 +262,6 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 	}
 }
 
-
-/*void changeLblColor(LitosFile* file, const char *color)
-{
-	const char *markup = g_markup_printf_escaped ("<span color='%s'>\%s</span>", color, litos_file_get_name(file));
-
-	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
-
-	gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox(file), litos_file_get_lbl(file));
-}
-
-void monitor_change (GObject *buffer, GParamSpec *pspec, gpointer app)
-{
-	LitosFile *file = litos_app_window_get_file_by_buffer(app, GTK_TEXT_BUFFER(buffer));
-
-	if (litos_file_get_saved(file) == TRUE)
-	{
-		changeLblColor(file, "red");
-		litos_file_set_unsaved(file);
-	}
-}*/
-
 void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
 {
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
@@ -294,7 +273,7 @@ void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer w
 
 		litos_file_save_as (file, gfile);
 
-		litos_file_set_saved(win, file);
+		litos_file_set_saved(file);
 
 		gtk_label_set_text (GTK_LABEL(litos_file_get_lbl(file)),  litos_file_get_name(file));
 	}
@@ -343,7 +322,7 @@ void litos_app_window_save(LitosAppWindow *win)
 		}
 
 		else
-			litos_file_set_saved(win,file);			
+			litos_file_set_saved(file);			
 	}
 }
 
@@ -396,9 +375,31 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 
 	g_ptr_array_add(win->litosFileList, file);
 
-	//g_signal_connect (page->buffer, "notify::text", G_CALLBACK (monitor_change), file);
-
 	return file;
+}
+
+static void lbltoColor(LitosAppWindow *win, LitosFile* file, const char *color)
+{
+	const char *markup = g_markup_printf_escaped ("<span color='%s'>\%s</span>", color, litos_file_get_name(file));
+
+	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
+
+	gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox(file), litos_file_get_lbl(file));
+}
+
+static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpointer win)
+{
+	LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
+	LitosFile *file = LITOS_FILE(gobject);
+
+	if (litos_file_get_saved(file) == TRUE)
+	{
+		lbltoColor(lwin, file, "red");
+		litos_file_set_unsaved(file);
+	}
+
+	else
+		lbltoColor(lwin, file, "black");
 }
 
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf)
@@ -409,6 +410,8 @@ LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf)
 	page.gf = gf;
 
 	LitosFile *file = litos_app_window_set_page(win,&page);
+
+	g_signal_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
 
 	return file;
 }
@@ -425,11 +428,7 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 
 	LitosFile *file = litos_app_window_set_page(win,&page);
 
+	g_signal_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
+
 	return file;
 }
-
-GtkNotebook * litos_app_win_get_nb(LitosAppWindow *win)
-{
-	return win->notebook;
-}
-

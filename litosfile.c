@@ -5,6 +5,7 @@
 
 GtkWidget* MyNewSourceview();
 void highlight_buffer(GtkTextBuffer *buffer, char *filename);
+void litos_file_set_unsaved(LitosFile *file);
 
 struct _LitosFile
 {
@@ -70,21 +71,6 @@ LitosFile *litos_file_new()
 	return g_object_new (LITOS_TYPE_FILE, NULL);
 }
 
-LitosFile * litos_file_set(struct Page *page)
-{
-	LitosFile *file = litos_file_new();
-
-	file->name = page->name;
-	file->gfile = page->gf;
-	file->scrolled = page->scrolled;
-	file->tabbox = page->tabbox;
-	file->view = page->view;
-	file->lbl = page->lbl;
-	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
-
-	return file;
-}
-
 GtkWidget * litos_file_get_lbl(LitosFile *file)
 {
 	return file->lbl;
@@ -115,30 +101,86 @@ gboolean litos_file_get_saved(LitosFile *file)
 	return file->saved;
 }
 
+void litos_file_set_saved(LitosFile *file)
+{
+	file->saved = TRUE;
+}
+
 GtkWidget * litos_file_get_tabbox(LitosFile *file)
 {
 	return file->tabbox;
 }
 
-static void lblToBlack(LitosAppWindow *win, LitosFile* file)
+typedef enum
 {
-	const char *markup = g_markup_printf_escaped ("<span color='black'>\%s</span>", litos_file_get_name(file));
+	PROP_SAVED = 1,
+	N_PROPERTIES
 
-	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
+} LitosFileProperty;
 
-	gtk_notebook_set_tab_label (litos_app_win_get_nb(win), litos_file_get_tabbox(file), litos_file_get_lbl(file));
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+static void
+litos_file_set_property (GObject      *object,
+                          guint         property_id,
+                          const GValue *value,
+                          GParamSpec   *pspec)
+{
+	LitosFile *self = LITOS_FILE (object);
+
+	switch ((LitosFileProperty) property_id)
+	{
+		case PROP_SAVED:
+			self->saved = g_value_get_boolean (value);
+			break;
+
+		default:
+			/* We don't have any other property... */
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+			break;
+	}
 }
 
-
-void litos_file_set_saved(LitosAppWindow *win, LitosFile *file)
+static void
+litos_file_get_property (GObject    *object,
+                          guint       property_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
 {
-	file->saved = TRUE;
-	lblToBlack (win,file);
+	LitosFile *self = LITOS_FILE (object);
+
+	switch ((LitosFileProperty) property_id)
+	{
+		case PROP_SAVED:
+			g_value_set_boolean (value, TRUE);
+			break;
+
+		default:
+			/* We don't have any other property... */
+			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+			break;
+	}
 }
 
 void litos_file_set_unsaved(LitosFile *file)
 {
 	file->saved = FALSE;
+	g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
+}
+
+LitosFile * litos_file_set(struct Page *page)
+{
+	LitosFile *file = litos_file_new();
+
+	file->name = page->name;
+	file->gfile = page->gf;
+	file->scrolled = page->scrolled;
+	file->tabbox = page->tabbox;
+	file->view = page->view;
+	file->lbl = page->lbl;
+	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
+
+	return file;
 }
 
 gboolean litos_file_load (LitosFile *file, GError *error)
