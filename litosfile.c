@@ -216,6 +216,8 @@ gboolean litos_file_load (LitosFile *file, GError *error)
 	{
 		gtk_text_buffer_set_text (file->buffer, contents, length);
 		highlight_buffer(file->buffer, file->name);
+		file->saved = TRUE;
+		g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
 		g_free (contents);
 		return TRUE;
 	}
@@ -244,6 +246,7 @@ gboolean litos_file_save(LitosFile *file, GError *error)
 		else
 		{
 			file->saved = TRUE;
+			g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
 			g_free(contents);
 		}
 	}

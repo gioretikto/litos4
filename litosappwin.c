@@ -398,7 +398,7 @@ static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpoi
 	}
 
 	else
-		lbltoColor(lwin, file, "black");
+		lbltoColor(lwin, file, "gray");
 }
 
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf)
