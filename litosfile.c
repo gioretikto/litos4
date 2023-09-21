@@ -226,6 +226,18 @@ void litos_file_highlight_buffer(LitosFile *file) /* Apply different font styles
 
 	if (lang != NULL)
 		gtk_source_buffer_set_highlight_syntax (source_buffer, TRUE);
+
+	GtkSourceStyleSchemeManager *scheme_manager = gtk_source_style_scheme_manager_get_default();
+	const gchar * const* schemes = gtk_source_style_scheme_manager_get_scheme_ids(scheme_manager);
+
+	if (schemes != NULL && schemes[0] != NULL)
+	{
+		GtkSourceStyleScheme *scheme = gtk_source_style_scheme_manager_get_scheme(scheme_manager,
+			schemes[1]);
+
+		if (scheme != NULL)
+			gtk_source_buffer_set_style_scheme(source_buffer, scheme);
+	}
 }
 
 gboolean litos_file_load (LitosFile *file, GError *error)
