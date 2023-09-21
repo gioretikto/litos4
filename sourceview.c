@@ -21,19 +21,3 @@ GtkWidget* MyNewSourceview()
 
 	return source_view;
 }
-
-void highlight_buffer(GtkTextBuffer *buffer) /* Apply different font styles depending on file extension .html .c, etc */
-{
-	GtkSourceLanguageManager *lm = gtk_source_language_manager_get_default();
-
-	GtkSourceLanguage *lang;
-
-	GtkSourceBuffer *source_buffer = GTK_SOURCE_BUFFER(buffer);
-
-	lang = gtk_source_language_manager_get_language(lm,"html");
-		
-	gtk_source_buffer_set_language (source_buffer, lang);
-
-	if (lang != NULL)
-		gtk_source_buffer_set_highlight_syntax (source_buffer, TRUE);
-}

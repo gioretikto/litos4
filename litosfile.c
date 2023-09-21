@@ -1,10 +1,10 @@
 #include <gtk/gtk.h>
+#include <gtksourceview/gtksource.h>
 
 #include "litosfile.h"
 #include "page.h"
 
 GtkWidget* MyNewSourceview();
-void highlight_buffer(GtkTextBuffer *buffer);
 void litos_file_set_unsaved(LitosFile *file);
 
 struct _LitosFile
@@ -207,6 +207,27 @@ LitosFile * litos_file_set(struct Page *page)
 	return file;
 }
 
+void litos_file_highlight_buffer(LitosFile *file) /* Apply different font styles depending on file extension .html .c, etc */
+{
+	GtkSourceLanguageManager *lm = gtk_source_language_manager_get_default();
+
+	GtkSourceLanguage *lang;
+
+	GtkSourceBuffer *source_buffer = GTK_SOURCE_BUFFER(file->buffer);
+
+	if (file->name == NULL)
+		lang = gtk_source_language_manager_get_language(lm,"html");
+	else
+		lang = gtk_source_language_manager_guess_language(lm, file->name, NULL);
+
+	printf("lang is = %p\n", (void *)lang);
+		
+	gtk_source_buffer_set_language (source_buffer, lang);
+
+	if (lang != NULL)
+		gtk_source_buffer_set_highlight_syntax (source_buffer, TRUE);
+}
+
 gboolean litos_file_load (LitosFile *file, GError *error)
 {
 	char *contents;
@@ -215,7 +236,7 @@ gboolean litos_file_load (LitosFile *file, GError *error)
 	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, &error))
 	{
 		gtk_text_buffer_set_text (file->buffer, contents, length);
-		highlight_buffer(file->buffer);
+		litos_file_highlight_buffer(file);
 		file->saved = TRUE;
 		g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
 		g_free (contents);
