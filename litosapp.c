@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <gtksourceview/gtksource.h>
 
 #include "litosapp.h"
 #include "litosappprefs.h"
@@ -40,6 +41,8 @@ litos_app_startup (GApplication *app)
 	setAccels(app);
 
 	G_APPLICATION_CLASS (litos_app_parent_class)->startup (app);
+
+	gtk_source_init();
 
 	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
 
