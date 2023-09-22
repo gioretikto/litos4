@@ -7,18 +7,13 @@
 gboolean litos_file_load (LitosFile *file, GError *error);
 
 void litos_app_window_remove_child(LitosAppWindow *win);
-void litos_app_window_save(LitosAppWindow *app);
+void litos_app_window_save(LitosAppWindow *win, LitosFile *file);
 void litos_app_window_save_as(LitosAppWindow *app);
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf);
 void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win);
-GtkWidget * litos_file_get_view(LitosFile *file);
 GtkWidget * litos_file_get_tabbox(LitosFile *file);
-GtkWidget * litos_file_get_lbl(LitosFile *file);
-gboolean litos_file_get_saved(LitosFile *file);
-gchar *litos_file_get_name(LitosFile *file);
-
-gchar *litos_file_get_name(LitosFile *file);
+LitosFile * litos_app_window_current_file(LitosAppWindow *win);
 
 GtkNotebook * litos_app_win_get_nb(LitosAppWindow *win);
 
@@ -73,8 +68,11 @@ open_activated(GSimpleAction *action, GVariant *parameter, gpointer app)
 static void
 save(GSimpleAction *action, GVariant *parameter, gpointer app)
 {
-	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-	litos_app_window_save(LITOS_APP_WINDOW (win));
+	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+
+	LitosFile *file = litos_app_window_current_file(win);
+	litos_app_window_save(win, file);
 }
 
 static void

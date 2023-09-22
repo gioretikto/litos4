@@ -70,10 +70,10 @@ typedef enum
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 static void
-litos_file_set_property (GObject      *object,
-                          guint         property_id,
+litos_file_set_property (GObject *object,
+                          guint  property_id,
                           const GValue *value,
-                          GParamSpec   *pspec)
+                          GParamSpec *pspec)
 {
 	LitosFile *self = LITOS_FILE (object);
 
@@ -121,15 +121,15 @@ litos_file_class_init (LitosFileClass *class)
 	object_class->get_property = litos_file_get_property;
 
 	obj_properties[PROP_SAVED] =
-	    g_param_spec_string ("saved",
+		g_param_spec_string ("saved",
 		                 "Save",
 		                 "File status",
 		                 NULL  /* default value */,
 		                 G_PARAM_READWRITE);
 
 	g_object_class_install_properties (object_class,
-				N_PROPERTIES,
-				obj_properties);
+		N_PROPERTIES,
+		obj_properties);
 }
 
 LitosFile *litos_file_new()
@@ -165,11 +165,6 @@ GtkTextBuffer *litos_file_get_buffer(LitosFile *file)
 gboolean litos_file_get_saved(LitosFile *file)
 {
 	return file->saved;
-}
-
-void litos_file_set_saved(LitosFile *file)
-{
-	file->saved = TRUE;
 }
 
 GtkWidget * litos_file_get_tabbox(LitosFile *file)
@@ -220,8 +215,6 @@ void litos_file_highlight_buffer(LitosFile *file) /* Apply different font styles
 	else
 		lang = gtk_source_language_manager_guess_language(lm, file->name, NULL);
 
-	printf("lang is = %p\n", (void *)lang);
-		
 	gtk_source_buffer_set_language (source_buffer, lang);
 
 	if (lang != NULL)
@@ -233,7 +226,7 @@ void litos_file_highlight_buffer(LitosFile *file) /* Apply different font styles
 	if (schemes != NULL && schemes[0] != NULL)
 	{
 		GtkSourceStyleScheme *scheme = gtk_source_style_scheme_manager_get_scheme(scheme_manager,
-			schemes[1]);
+			schemes[8]);
 
 		if (scheme != NULL)
 			gtk_source_buffer_set_style_scheme(source_buffer, scheme);
@@ -295,6 +288,7 @@ void litos_file_save_as(LitosFile* file, GFile *new_file)
 	file->gfile = new_file;
 
 	g_free (file->name);
+
 	file->name = g_file_get_basename(new_file);
 
 	litos_file_save(file, NULL);

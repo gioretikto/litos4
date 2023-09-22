@@ -10,13 +10,12 @@ GFile *litos_file_get_gfile(LitosFile* file);
 gboolean litos_file_save(LitosFile *file, GError *error);
 void litos_file_save_as(LitosFile* file, GFile *new_file);
 gchar *litos_file_get_name(LitosFile *file);
-GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
+
 LitosFile * litos_file_set(struct Page *page);
 gboolean litos_file_get_saved(LitosFile *file);
 GtkWidget * litos_file_get_view(LitosFile *file);
 GtkWidget * litos_file_get_lbl(LitosFile *file);
 GtkWidget * litos_file_get_tabbox(LitosFile *file);
-void litos_file_set_saved(LitosFile *file);
 
 static GtkSourceView* currentTabSourceView(LitosAppWindow *win);
 GtkWidget* MyNewSourceview();
@@ -85,7 +84,7 @@ close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
 }
 
 static void
-search_text_changed (GtkEntry	*entry,
+search_text_changed (GtkEntry *entry,
                      LitosAppWindow *win)
 {
 	const char *text;
@@ -115,7 +114,7 @@ search_text_changed (GtkEntry	*entry,
 }
 
 static void
-visible_child_changed (GObject	*notebook,
+visible_child_changed (GObject *notebook,
 			GParamSpec *pspec,
 			LitosAppWindow *win)
 {
@@ -183,35 +182,7 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-static gboolean _litos_file_buffer_equal(gconstpointer array_element, gconstpointer buffer)
-{
-    return litos_file_get_buffer ((LITOS_FILE((void*)array_element))) == buffer;
-}
-
-
-guint litos_app_window_get_file_index_by_buffer(LitosAppWindow *win, GtkTextBuffer *buffer)
-{
-	guint index = -1;
-
-	if (g_ptr_array_find_with_equal_func(win->litosFileList, buffer,
-	        _litos_file_buffer_equal, &index))
-	return index;
-
-	else
-		return -1;
-}
-
-LitosFile *litos_app_window_get_file_by_buffer(LitosAppWindow *win, GtkTextBuffer *buffer)
-{
-    guint index;
-    if (g_ptr_array_find_with_equal_func(win->litosFileList, buffer,
-        _litos_file_buffer_equal, &index))
-        return g_ptr_array_index(win->litosFileList, index);
-    else
-        return NULL;
-}
-
-gboolean litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpointer window)
+void litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpointer window)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
@@ -220,15 +191,16 @@ gboolean litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, g
 	switch (response)
 	{
 		case GTK_RESPONSE_ACCEPT:
-			litos_file_save (file, NULL);
-			litos_file_set_saved(file);
+			litos_app_window_save(win,file);
 
 		case GTK_RESPONSE_CANCEL:
-			return TRUE;
+			break;
 
 		case GTK_RESPONSE_REJECT:
 			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
-			return false;
+
+		default: /*close bottun was pressed*/
+			g_print("The bottun(Close without Saving/Cancel/Save) was not pressed.");
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
@@ -269,11 +241,10 @@ void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer w
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
 		LitosFile *file = litos_app_window_current_file(win);
+
 		g_autoptr (GFile) gfile = gtk_file_chooser_get_file(chooser);
 
 		litos_file_save_as (file, gfile);
-
-		litos_file_set_saved(file);
 
 		gtk_label_set_text (GTK_LABEL(litos_file_get_lbl(file)),  litos_file_get_name(file));
 	}
@@ -299,10 +270,8 @@ void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter
 	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), win);
 }
 
-void litos_app_window_save(LitosAppWindow *win)
+void litos_app_window_save(LitosAppWindow *win, LitosFile *file)
 {
-	LitosFile *file = litos_app_window_current_file(win);
-
 	char *filename = litos_file_get_name(file);
 
 	if (litos_file_get_gfile(file) == NULL)
@@ -319,10 +288,7 @@ void litos_app_window_save(LitosAppWindow *win)
 			GTK_BUTTONS_CLOSE, "ERROR : Can't save %s.\n %s", filename, error->message);
 			gtk_widget_show(message_dialog);
 			g_error_free(error);
-		}
-
-		else
-			litos_file_set_saved(file);			
+		}		
 	}
 }
 
@@ -378,7 +344,7 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 	return file;
 }
 
-static void lbltoColor(LitosAppWindow *win, LitosFile* file, const char *color)
+static void lblToColor(LitosAppWindow *win, LitosFile* file, const char *color)
 {
 	const char *markup = g_markup_printf_escaped ("<span color='%s'>\%s</span>", color, litos_file_get_name(file));
 
@@ -393,12 +359,10 @@ static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpoi
 	LitosFile *file = LITOS_FILE(gobject);
 
 	if (litos_file_get_saved(file) == FALSE)
-	{
-		lbltoColor(lwin, file, "red");
-	}
+		lblToColor(lwin, file, "red");
 
 	else
-		lbltoColor(lwin, file, "gray");
+		lblToColor(lwin, file, "gray");
 }
 
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf)

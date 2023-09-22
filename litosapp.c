@@ -34,7 +34,6 @@ preferences_activated (GSimpleAction *action,
 	gtk_window_present (GTK_WINDOW (prefs));
 }
 
-
 static void
 litos_app_startup (GApplication *app)
 {
@@ -45,7 +44,6 @@ litos_app_startup (GApplication *app)
 	gtk_source_init();
 
 	g_object_set(gtk_settings_get_default(), "gtk-application-prefer-dark-theme", TRUE, NULL);
-
 }
 
 static void
@@ -62,7 +60,7 @@ litos_app_activate (GApplication *app)
 
 static void
 litos_app_open (GApplication  *app,
-                  GFile        **files,
+                  GFile **files,
                   int            n_files,
                   const char    *hint)
 {
