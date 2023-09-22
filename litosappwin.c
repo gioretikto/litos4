@@ -17,7 +17,6 @@ GtkWidget * litos_file_get_view(LitosFile *file);
 GtkWidget * litos_file_get_lbl(LitosFile *file);
 GtkWidget * litos_file_get_tabbox(LitosFile *file);
 
-static GtkSourceView* currentTabSourceView(LitosAppWindow *win);
 GtkWidget* MyNewSourceview();
 
 struct _LitosAppWindow
@@ -81,6 +80,13 @@ close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
 	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
 
 	gtk_notebook_remove_page(win->notebook, gtk_notebook_get_current_page (win->notebook));
+}
+
+static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
+{
+	LitosFile *file = litos_app_window_current_file(win);
+
+	return GTK_SOURCE_VIEW(litos_file_get_view);
 }
 
 static void
@@ -182,58 +188,6 @@ litos_app_window_new (LitosApp *app)
 	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-void litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpointer window)
-{
-	LitosAppWindow *win = LITOS_APP_WINDOW(window);
-
-	LitosFile *file = litos_app_window_current_file(win);
-
-	switch (response)
-	{
-		case GTK_RESPONSE_ACCEPT:
-			litos_app_window_save(win,file);
-
-		case GTK_RESPONSE_CANCEL:
-			break;
-
-		case GTK_RESPONSE_REJECT:
-			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
-
-		default: /*close bottun was pressed*/
-			g_print("The bottun(Close without Saving/Cancel/Save) was not pressed.");
-	}
-
-	gtk_window_destroy (GTK_WINDOW (dialog));
-}
-
-void litos_app_window_remove_child(LitosAppWindow *win)
-{
-	GtkWidget *tabbox = gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page ((win->notebook)));
-
-	if (tabbox != NULL)
-	{
-		LitosFile *file = litos_app_window_current_file(win);
-
-		if (litos_file_get_saved(file))
-			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
-
-		else
-		{
-			GtkWidget *dialog;
-
-			dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
-				      GTK_BUTTONS_NONE, "Save changes to document %s before closing?", litos_file_get_name(file));
-
-			gtk_dialog_add_buttons (GTK_DIALOG(dialog), "Close without Saving", GTK_RESPONSE_REJECT,
-				                                      "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT,  NULL);
-
-			gtk_widget_show(dialog);
-
-			g_signal_connect (dialog, "response", G_CALLBACK (litos_app_window_saveornot_at_close), win);
-		}
-	}
-}
-
 void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
 {
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
@@ -292,16 +246,61 @@ void litos_app_window_save(LitosAppWindow *win, LitosFile *file)
 	}
 }
 
+void litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpointer window)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+
+	LitosFile *file = litos_app_window_current_file(win);
+
+	switch (response)
+	{
+		case GTK_RESPONSE_ACCEPT:
+			litos_app_window_save(win,file);
+
+		case GTK_RESPONSE_CANCEL:
+			break;
+
+		case GTK_RESPONSE_REJECT:
+			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
+
+		default: /*close bottun was pressed*/
+			g_print("The bottun(Close without Saving/Cancel/Save) was not pressed.");
+	}
+
+	gtk_window_destroy (GTK_WINDOW (dialog));
+}
+
+void litos_app_window_remove_child(LitosAppWindow *win)
+{
+	GtkWidget *tabbox = gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page ((win->notebook)));
+
+	if (tabbox != NULL)
+	{
+		LitosFile *file = litos_app_window_current_file(win);
+
+		if (litos_file_get_saved(file))
+			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
+
+		else
+		{
+			GtkWidget *dialog;
+
+			dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
+				      GTK_BUTTONS_NONE, "Save changes to document %s before closing?", litos_file_get_name(file));
+
+			gtk_dialog_add_buttons (GTK_DIALOG(dialog), "Close without Saving", GTK_RESPONSE_REJECT,
+				                                      "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT,  NULL);
+
+			gtk_widget_show(dialog);
+
+			g_signal_connect (dialog, "response", G_CALLBACK (litos_app_window_saveornot_at_close), win);
+		}
+	}
+}
+
 void litos_app_window_save_as(LitosAppWindow *win)
 {
 	litos_app_window_save_as_dialog(NULL, NULL, win);
-}
-
-static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
-{
-	LitosFile *file = litos_app_window_current_file(win);
-
-	return GTK_SOURCE_VIEW(litos_file_get_view);
 }
 
 LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
@@ -373,6 +372,11 @@ LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf)
 	page.gf = gf;
 
 	LitosFile *file = litos_app_window_set_page(win,&page);
+
+	gtk_notebook_set_current_page (
+	  win->notebook,
+	  gtk_notebook_get_current_page(win->notebook)
+	);
 
 	g_signal_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
 
