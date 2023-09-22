@@ -309,6 +309,8 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 
 	GtkTextIter start_iter, end_iter;
 
+	int page_num;
+
 	page->lbl = gtk_label_new(page->name);
 	page->tabbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
 	page->scrolled = gtk_scrolled_window_new ();
@@ -340,6 +342,15 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 
 	g_ptr_array_add(win->litosFileList, file);
 
+	page_num =  gtk_notebook_get_current_page(win->notebook);
+
+	page_num++;
+
+	gtk_notebook_set_current_page (
+	  win->notebook,
+	  page_num
+	);
+
 	return file;
 }
 
@@ -368,15 +379,11 @@ LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf)
 {
 	struct Page page;
 
+
 	page.name = g_file_get_basename(gf);
 	page.gf = gf;
 
 	LitosFile *file = litos_app_window_set_page(win,&page);
-
-	gtk_notebook_set_current_page (
-	  win->notebook,
-	  gtk_notebook_get_current_page(win->notebook)
-	);
 
 	g_signal_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
 
