@@ -309,8 +309,6 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 
 	GtkTextIter start_iter, end_iter;
 
-	int page_num;
-
 	page->lbl = gtk_label_new(page->name);
 	page->tabbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
 	page->scrolled = gtk_scrolled_window_new ();
@@ -322,9 +320,13 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 
 	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (page->scrolled), page->view);
 	gtk_box_append (GTK_BOX(page->tabbox), page->scrolled);
-	gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->lbl, page->lbl);
 
 	tag = gtk_text_buffer_create_tag (page->buffer, NULL, NULL);
+
+	gtk_notebook_set_current_page (
+	  win->notebook,
+	 gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->lbl, page->lbl)
+	);
 
 	gtk_text_buffer_get_start_iter (page->buffer, &start_iter);
 	gtk_text_buffer_get_end_iter (page->buffer, &end_iter);
@@ -341,15 +343,6 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 	LitosFile *file = litos_file_set(page);
 
 	g_ptr_array_add(win->litosFileList, file);
-
-	page_num =  gtk_notebook_get_current_page(win->notebook);
-
-	page_num++;
-
-	gtk_notebook_set_current_page (
-	  win->notebook,
-	  page_num
-	);
 
 	return file;
 }
