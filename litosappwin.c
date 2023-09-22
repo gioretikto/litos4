@@ -73,15 +73,6 @@ LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 		return g_ptr_array_index(win->litosFileList, index);
 }
 
-
-static void
-close_activated (GSimpleAction *action, GVariant *parameter, gpointer userData)
-{
-	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
-
-	gtk_notebook_remove_page(win->notebook, gtk_notebook_get_current_page (win->notebook));
-}
-
 static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 {
 	LitosFile *file = litos_app_window_current_file(win);
