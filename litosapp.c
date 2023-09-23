@@ -8,6 +8,7 @@
 void setAccels (GApplication *app);
 gboolean litos_file_load (LitosFile *file, GError *error);
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
+void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer app);
 
 struct _LitosApp
 {
@@ -49,13 +50,13 @@ litos_app_startup (GApplication *app)
 static void
 litos_app_activate (GApplication *app)
 {
-	LitosAppWindow *win;
+	LitosAppWindow *win = litos_app_window_new (LITOS_APP (app));
 
-	win = litos_app_window_new (LITOS_APP (app));
+	GtkWindow *window = GTK_WINDOW (win);
 
-	gtk_window_set_title (GTK_WINDOW (win), "Litos");
-	gtk_window_maximize (GTK_WINDOW (win));
-	gtk_window_present (GTK_WINDOW (win));
+	gtk_window_set_title (window, "Litos");
+	gtk_window_maximize (window);
+	gtk_window_present (window);
 }
 
 static void

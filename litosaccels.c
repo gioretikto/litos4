@@ -6,7 +6,7 @@
 
 gboolean litos_file_load (LitosFile *file, GError *error);
 
-void litos_app_window_remove_child(LitosAppWindow *win);
+gboolean litos_app_window_remove_child(LitosAppWindow *win);
 void litos_app_window_save(LitosAppWindow *win, LitosFile *file);
 void litos_app_window_save_as(LitosAppWindow *app);
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
@@ -15,7 +15,11 @@ void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win);
 GtkWidget * litos_file_get_tabbox(LitosFile *file);
 LitosFile * litos_app_window_current_file(LitosAppWindow *win);
 
+guint litos_app_window_get_array_len(LitosAppWindow *win);
+
 GtkNotebook * litos_app_win_get_nb(LitosAppWindow *win);
+
+void litos_app_window_quit (GtkWidget *widget, GdkEvent *event, gpointer userData);
 
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
@@ -96,23 +100,6 @@ preferences_activated (GSimpleAction *action,
 }
 
 static void
-quit_activated (GSimpleAction *action,
-                GVariant      *parameter,
-                gpointer       app)
-{
-	g_application_quit (G_APPLICATION (app));
-}
-
-static void
-new_file (GSimpleAction *action,
-                GVariant      *parameter,
-                gpointer       app)
-{
-	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-	litos_app_window_new_tab(LITOS_APP_WINDOW(win), NULL);
-}
-
-static void
 close_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
 {
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
@@ -122,6 +109,32 @@ close_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
 	litos_app_window_remove_child(win);
 }
 
+void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
+{
+	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+
+	litos_app_window_quit(NULL, NULL, win);
+
+	if (litos_app_window_get_array_len(win) == 0)
+		g_application_quit (G_APPLICATION (app));
+}
+
+void litos_app_quit (GtkWindow *win, GdkEvent *event, gpointer userData)
+{
+	quit_activated(NULL, NULL, userData);
+}
+
+static void
+new_file (GSimpleAction *action,
+                GVariant      *parameter,
+                gpointer       app)
+{
+	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+	litos_app_window_new_tab(LITOS_APP_WINDOW(win), NULL);
+
+	g_signal_connect (GTK_WINDOW(win), "notify::close-request", G_CALLBACK (litos_app_quit), app);
+}
 
 void setAccels (GApplication *app)
 {

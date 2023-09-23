@@ -121,64 +121,6 @@ visible_child_changed (GObject *notebook,
 	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (win->searchbar), FALSE);
 }
 
-static void
-litos_app_window_init (LitosAppWindow *win)
-{
-	GtkBuilder *builder;
-	GMenuModel *menu;
-
-	gtk_widget_init_template (GTK_WIDGET (win));
-
-	builder = gtk_builder_new_from_resource ("/org/gtk/litos/gears-menu.ui");
-	menu = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
-	gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (win->gears), menu);
-	g_object_unref (builder);
-
-	win->settings = g_settings_new ("org.gtk.litos");
-	gtk_widget_set_sensitive (win->search, TRUE);
-	win->litosFileList = g_ptr_array_new_full(0, g_object_unref);
-
-	g_object_bind_property (win->search, "active",
-		win->searchbar, "search-mode-enabled",
-		G_BINDING_BIDIRECTIONAL);
-}
-
-static void
-litos_app_window_dispose (GObject *object)
-{
-	LitosAppWindow *win;
-
-	win = LITOS_APP_WINDOW (object);
-
-	g_clear_object (&win->settings);
-
-	g_ptr_array_unref(win->litosFileList);
-
-	G_OBJECT_CLASS (litos_app_window_parent_class)->dispose (object);
-}
-
-static void
-litos_app_window_class_init (LitosAppWindowClass *class)
-{
-	G_OBJECT_CLASS (class)->dispose = litos_app_window_dispose;
-
-	gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (class),
-						"/org/gtk/litos/window.ui");
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, notebook);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, gears);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, searchbar);
-
-	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);
-	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), visible_child_changed);
-}
-
-LitosAppWindow *
-litos_app_window_new (LitosApp *app)
-{
-	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
-}
-
 void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
 {
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
@@ -237,7 +179,7 @@ void litos_app_window_save(LitosAppWindow *win, LitosFile *file)
 	}
 }
 
-void litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpointer window)
+void litos_app_window_saveornot_dialog(GtkWidget *dialog, gint response, gpointer window)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
@@ -253,6 +195,7 @@ void litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpoin
 
 		case GTK_RESPONSE_REJECT:
 			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
+			g_ptr_array_remove(win->litosFileList, file);
 
 		default: /*close bottun was pressed*/
 			g_print("The bottun(Close without Saving/Cancel/Save) was not pressed.");
@@ -261,7 +204,22 @@ void litos_app_window_saveornot_at_close(GtkWidget *dialog, gint response, gpoin
 	gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
-void litos_app_window_remove_child(LitosAppWindow *win)
+void litos_app_window_saveornot_at_close(LitosAppWindow *win, LitosFile *file)
+{
+	GtkWidget *dialog;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
+		      GTK_BUTTONS_NONE, "Save changes to document %s before closing?", litos_file_get_name(file));
+
+	gtk_dialog_add_buttons (GTK_DIALOG(dialog), "Close without Saving", GTK_RESPONSE_REJECT,
+		                                      "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT,  NULL);
+
+	gtk_widget_show(dialog);
+
+	g_signal_connect (dialog, "response", G_CALLBACK (litos_app_window_saveornot_dialog), win);
+}
+
+gboolean litos_app_window_remove_child(LitosAppWindow *win)
 {
 	GtkWidget *tabbox = gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page ((win->notebook)));
 
@@ -270,23 +228,93 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 		LitosFile *file = litos_app_window_current_file(win);
 
 		if (litos_file_get_saved(file))
+		{
 			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
+
+			g_ptr_array_remove(win->litosFileList, file);
+
+			return TRUE;
+		}
 
 		else
 		{
-			GtkWidget *dialog;
-
-			dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL, GTK_MESSAGE_WARNING,
-				      GTK_BUTTONS_NONE, "Save changes to document %s before closing?", litos_file_get_name(file));
-
-			gtk_dialog_add_buttons (GTK_DIALOG(dialog), "Close without Saving", GTK_RESPONSE_REJECT,
-				                                      "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT,  NULL);
-
-			gtk_widget_show(dialog);
-
-			g_signal_connect (dialog, "response", G_CALLBACK (litos_app_window_saveornot_at_close), win);
+			litos_app_window_saveornot_at_close(win, file);
+			return FALSE;	
 		}
 	}
+
+	return FALSE;
+}
+
+void litos_app_window_quit (GtkWidget *widget, GdkEvent *event, gpointer app)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(app);
+
+	while (win->litosFileList->len != 0 && litos_app_window_remove_child(win))
+	{
+		;
+	}
+
+	if(win->litosFileList->len == 0)
+		g_application_quit (G_APPLICATION (app));
+}
+
+static void
+litos_app_window_init (LitosAppWindow *win)
+{
+	GtkBuilder *builder;
+	GMenuModel *menu;
+
+	gtk_widget_init_template (GTK_WIDGET (win));
+
+	builder = gtk_builder_new_from_resource ("/org/gtk/litos/gears-menu.ui");
+	menu = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
+	gtk_menu_button_set_menu_model (GTK_MENU_BUTTON (win->gears), menu);
+	g_object_unref (builder);
+
+	win->settings = g_settings_new ("org.gtk.litos");
+	gtk_widget_set_sensitive (win->search, TRUE);
+	win->litosFileList = g_ptr_array_new_full(0, g_object_unref);
+
+	g_object_bind_property (win->search, "active",
+		win->searchbar, "search-mode-enabled",
+		G_BINDING_BIDIRECTIONAL);
+}
+
+static void
+litos_app_window_dispose (GObject *object)
+{
+	LitosAppWindow *win;
+
+	win = LITOS_APP_WINDOW (object);
+
+	g_clear_object (&win->settings);
+
+	g_ptr_array_unref(win->litosFileList);
+
+	G_OBJECT_CLASS (litos_app_window_parent_class)->dispose (object);
+}
+
+static void
+litos_app_window_class_init (LitosAppWindowClass *class)
+{
+	G_OBJECT_CLASS (class)->dispose = litos_app_window_dispose;
+
+	gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (class),
+						"/org/gtk/litos/window.ui");
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, notebook);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, gears);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, searchbar);
+
+	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);
+	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), visible_child_changed);
+}
+
+LitosAppWindow *
+litos_app_window_new (LitosApp *app)
+{
+	return g_object_new (LITOS_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
 void litos_app_window_save_as(LitosAppWindow *win)
@@ -389,4 +417,9 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 	g_signal_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
 
 	return file;
+}
+
+guint litos_app_window_get_array_len(LitosAppWindow *win)
+{
+	return win->litosFileList->len;
 }
