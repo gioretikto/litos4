@@ -246,9 +246,8 @@ gboolean litos_app_window_remove_child(LitosAppWindow *win)
 	return FALSE;
 }
 
-void litos_app_window_quit (GtkWindow *window, gpointer user_data)
+gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
 {
-
 	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
 
 	LitosApp *app = LITOS_APP(gtk_window_get_application(window));
@@ -261,6 +260,8 @@ void litos_app_window_quit (GtkWindow *window, gpointer user_data)
 		printf("QUIT activated\n");
 		gtk_application_remove_window(GTK_APPLICATION(app), window);
 	}
+	
+	return TRUE;
 }
 
 static void

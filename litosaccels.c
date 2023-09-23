@@ -19,7 +19,7 @@ guint litos_app_window_get_array_len(LitosAppWindow *win);
 
 GtkNotebook * litos_app_win_get_nb(LitosAppWindow *win);
 
-void litos_app_window_quit (GtkWidget *widget, GdkEvent *event, gpointer userData);
+gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data);
 
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
@@ -114,10 +114,10 @@ void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
-	litos_app_window_quit(NULL, NULL, win);
+	litos_app_window_quit(window, win);
 
-	if (litos_app_window_get_array_len(win) == 0)
-		g_application_quit (G_APPLICATION (app));
+	/*if (litos_app_window_get_array_len(win) == 0)
+		g_application_quit (G_APPLICATION (app));*/
 }
 
 static void
