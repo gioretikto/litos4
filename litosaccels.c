@@ -120,11 +120,6 @@ void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
 		g_application_quit (G_APPLICATION (app));
 }
 
-void litos_app_quit (GtkWindow *win, GdkEvent *event, gpointer userData)
-{
-	quit_activated(NULL, NULL, userData);
-}
-
 static void
 new_file (GSimpleAction *action,
                 GVariant      *parameter,
@@ -133,7 +128,6 @@ new_file (GSimpleAction *action,
 	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
 	litos_app_window_new_tab(LITOS_APP_WINDOW(win), NULL);
 
-	g_signal_connect (GTK_WINDOW(win), "notify::close-request", G_CALLBACK (litos_app_quit), app);
 }
 
 void setAccels (GApplication *app)

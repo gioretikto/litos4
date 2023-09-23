@@ -239,24 +239,24 @@ gboolean litos_app_window_remove_child(LitosAppWindow *win)
 		else
 		{
 			litos_app_window_saveornot_at_close(win, file);
-			return FALSE;	
+			return FALSE;
 		}
 	}
 
 	return FALSE;
 }
 
-void litos_app_window_quit (GtkWidget *widget, GdkEvent *event, gpointer app)
+void litos_app_window_quit (GtkWidget *widget, GdkEvent *event, gpointer window)
 {
-	LitosAppWindow *win = LITOS_APP_WINDOW(app);
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+
+	LitosApp *app = LITOS_APP(gtk_window_get_application(GTK_WINDOW(win)));
 
 	while (win->litosFileList->len != 0 && litos_app_window_remove_child(win))
-	{
 		;
-	}
 
-	if(win->litosFileList->len == 0)
-		g_application_quit (G_APPLICATION (app));
+	if (win->litosFileList->len == 0)
+		gtk_application_remove_window(GTK_APPLICATION(app), GTK_WINDOW(win));
 }
 
 static void
@@ -274,7 +274,10 @@ litos_app_window_init (LitosAppWindow *win)
 
 	win->settings = g_settings_new ("org.gtk.litos");
 	gtk_widget_set_sensitive (win->search, TRUE);
+
 	win->litosFileList = g_ptr_array_new_full(0, g_object_unref);
+
+	g_signal_connect (GTK_WINDOW(win), "notify::close-request", G_CALLBACK (litos_app_window_quit), win);
 
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
@@ -343,8 +346,8 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 	tag = gtk_text_buffer_create_tag (page->buffer, NULL, NULL);
 
 	gtk_notebook_set_current_page (
-	  win->notebook,
-	 gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->lbl, page->lbl)
+		win->notebook,
+		gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->lbl, page->lbl)
 	);
 
 	gtk_text_buffer_get_start_iter (page->buffer, &start_iter);
@@ -390,7 +393,6 @@ static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpoi
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf)
 {
 	struct Page page;
-
 
 	page.name = g_file_get_basename(gf);
 	page.gf = gf;
