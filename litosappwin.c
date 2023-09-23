@@ -246,17 +246,17 @@ gboolean litos_app_window_remove_child(LitosAppWindow *win)
 	return FALSE;
 }
 
-void litos_app_window_quit (GtkWidget *widget, GdkEvent *event, gpointer window)
+void litos_app_window_quit (GtkWindow *window, gpointer user_data)
 {
-	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
 
-	LitosApp *app = LITOS_APP(gtk_window_get_application(GTK_WINDOW(win)));
+	LitosApp *app = LITOS_APP(gtk_window_get_application(window));
 
 	while (win->litosFileList->len != 0 && litos_app_window_remove_child(win))
 		;
 
 	if (win->litosFileList->len == 0)
-		gtk_application_remove_window(GTK_APPLICATION(app), GTK_WINDOW(win));
+		gtk_application_remove_window(GTK_APPLICATION(app), window);
 }
 
 static void
