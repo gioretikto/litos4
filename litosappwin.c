@@ -248,6 +248,7 @@ gboolean litos_app_window_remove_child(LitosAppWindow *win)
 
 void litos_app_window_quit (GtkWindow *window, gpointer user_data)
 {
+
 	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
 
 	LitosApp *app = LITOS_APP(gtk_window_get_application(window));
@@ -256,7 +257,10 @@ void litos_app_window_quit (GtkWindow *window, gpointer user_data)
 		;
 
 	if (win->litosFileList->len == 0)
+	{
+		printf("QUIT activated\n");
 		gtk_application_remove_window(GTK_APPLICATION(app), window);
+	}
 }
 
 static void
@@ -277,7 +281,7 @@ litos_app_window_init (LitosAppWindow *win)
 
 	win->litosFileList = g_ptr_array_new_full(0, g_object_unref);
 
-	g_signal_connect (GTK_WINDOW(win), "notify::close-request", G_CALLBACK (litos_app_window_quit), win);
+	g_signal_connect (GTK_WINDOW(win), "close-request", G_CALLBACK (litos_app_window_quit), win);
 
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
