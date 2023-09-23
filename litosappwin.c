@@ -252,7 +252,7 @@ void litos_app_window_quit (GtkWindow *window, gpointer user_data)
 
 	LitosApp *app = LITOS_APP(gtk_window_get_application(window));
 
-	while (win->litosFileList->len != 0 && litos_app_window_remove_child(win))
+	while ((win->litosFileList->len) != 0 && litos_app_window_remove_child(win))
 		;
 
 	if (win->litosFileList->len == 0)
