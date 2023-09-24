@@ -29,6 +29,7 @@ struct _LitosAppWindow
 	GtkWidget *search;
 	GtkWidget *searchbar;
 	GPtrArray *litosFileList;
+	gboolean quit;
 };
 
 G_DEFINE_TYPE (LitosAppWindow, litos_app_window, GTK_TYPE_APPLICATION_WINDOW);
@@ -157,7 +158,7 @@ void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter
 	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), win);
 }
 
-void litos_app_window_save(LitosAppWindow *win, LitosFile *file)
+gboolean litos_app_window_save(LitosAppWindow *win, LitosFile *file)
 {
 	char *filename = litos_file_get_name(file);
 
@@ -175,13 +176,19 @@ void litos_app_window_save(LitosAppWindow *win, LitosFile *file)
 			GTK_BUTTONS_CLOSE, "ERROR : Can't save %s.\n %s", filename, error->message);
 			gtk_widget_show(message_dialog);
 			g_error_free(error);
-		}		
+			return FALSE;
+		}
+
+		else
+			return TRUE;
 	}
 }
 
-void litos_app_window_saveornot_dialog(GtkWidget *dialog, gint response, gpointer window)
+static void litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response, gpointer window)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+
+	LitosApp *app = LITOS_APP(gtk_window_get_application(window));
 
 	LitosFile *file = litos_app_window_current_file(win);
 
@@ -189,14 +196,21 @@ void litos_app_window_saveornot_dialog(GtkWidget *dialog, gint response, gpointe
 	{
 		case GTK_RESPONSE_ACCEPT:
 			litos_app_window_save(win,file);
+			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
+			g_ptr_array_remove(win->litosFileList, file);
+			if (win->litosFileList->len == 0 && win->quit == TRUE)
+				g_application_quit (G_APPLICATION (app));
 			break;
 
 		case GTK_RESPONSE_CANCEL:
+			win->quit = FALSE;
 			break;
 
 		case GTK_RESPONSE_REJECT:
 			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
 			g_ptr_array_remove(win->litosFileList, file);
+			if (win->litosFileList->len == 0 && win->quit == TRUE)
+				g_application_quit (G_APPLICATION (app));
 			break;
 
 		default: /*close bottun was pressed*/
@@ -204,9 +218,11 @@ void litos_app_window_saveornot_dialog(GtkWidget *dialog, gint response, gpointe
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
+
+	win->quit = FALSE;
 }
 
-void litos_app_window_saveornot_at_close(LitosAppWindow *win, LitosFile *file)
+void litos_app_window_saveornot_dialog(LitosAppWindow *win, LitosFile *file)
 {
 	GtkWidget *dialog;
 
@@ -218,10 +234,10 @@ void litos_app_window_saveornot_at_close(LitosAppWindow *win, LitosFile *file)
 
 	gtk_widget_show(dialog);
 
-	g_signal_connect (dialog, "response", G_CALLBACK (litos_app_window_saveornot_dialog), win);
+	g_signal_connect (dialog, "response", G_CALLBACK (litos_app_window_saveornot_dialog_cb), win);
 }
 
-gboolean litos_app_window_remove_child(LitosAppWindow *win)
+void litos_app_window_remove_child(LitosAppWindow *win)
 {
 	GtkWidget *tabbox = gtk_notebook_get_nth_page (win->notebook, gtk_notebook_get_current_page ((win->notebook)));
 
@@ -234,34 +250,24 @@ gboolean litos_app_window_remove_child(LitosAppWindow *win)
 			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
 
 			g_ptr_array_remove(win->litosFileList, file);
-
-			return TRUE;
 		}
 
 		else
-		{
-			litos_app_window_saveornot_at_close(win, file);
-			return FALSE;
-		}
+			litos_app_window_saveornot_dialog(win, file);
 	}
-
-	return FALSE;
 }
 
 gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
 
-	LitosApp *app = LITOS_APP(gtk_window_get_application(window));
-
-	while ((win->litosFileList->len) != 0 && litos_app_window_remove_child(win))
-		;
-
-	if (win->litosFileList->len == 0)
+	while (win->litosFileList->len != 0)
 	{
-		printf("QUIT activated\n");
-		gtk_application_remove_window(GTK_APPLICATION(app), window);
+		win->quit = TRUE;
+		litos_app_window_remove_child(win);
 	}
+
+	printf("LEN is %d\n", win->litosFileList->len);
 	
 	return TRUE;
 }
@@ -282,6 +288,7 @@ litos_app_window_init (LitosAppWindow *win)
 	win->settings = g_settings_new ("org.gtk.litos");
 	gtk_widget_set_sensitive (win->search, TRUE);
 
+	win->quit = FALSE;
 	win->litosFileList = g_ptr_array_new_full(0, g_object_unref);
 
 	g_signal_connect (GTK_WINDOW(win), "close-request", G_CALLBACK (litos_app_window_quit), win);
