@@ -235,8 +235,6 @@ static void litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
-
-	win->quit = FALSE;
 }
 
 void litos_app_window_saveornot_dialog(LitosAppWindow *win, LitosFile *file)
