@@ -17,6 +17,8 @@ GtkWidget * litos_file_get_view(LitosFile *file);
 GtkWidget * litos_file_get_lbl(LitosFile *file);
 GtkWidget * litos_file_get_tabbox(LitosFile *file);
 
+void litos_app_window_remove_child(LitosAppWindow *win);
+
 GtkWidget* MyNewSourceview();
 
 struct _LitosAppWindow
@@ -198,8 +200,16 @@ static void litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response
 			litos_app_window_save(win,file);
 			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
 			g_ptr_array_remove(win->litosFileList, file);
-			if (win->litosFileList->len == 0 && win->quit == TRUE)
-				g_application_quit (G_APPLICATION (app));
+			if (win->quit == TRUE)
+			{
+				if(win->litosFileList->len == 0)
+					g_application_quit (G_APPLICATION (app));
+				else
+					litos_app_window_remove_child(win);
+
+				return;
+			}					
+
 			break;
 
 		case GTK_RESPONSE_CANCEL:
@@ -209,8 +219,15 @@ static void litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response
 		case GTK_RESPONSE_REJECT:
 			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
 			g_ptr_array_remove(win->litosFileList, file);
-			if (win->litosFileList->len == 0 && win->quit == TRUE)
-				g_application_quit (G_APPLICATION (app));
+			if (win->quit == TRUE)
+			{
+				if(win->litosFileList->len == 0)
+					g_application_quit (G_APPLICATION (app));
+				else
+					litos_app_window_remove_child(win);
+
+				return;
+			}
 			break;
 
 		default: /*close bottun was pressed*/
@@ -261,14 +278,9 @@ gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
 
-	while (win->litosFileList->len != 0)
-	{
-		win->quit = TRUE;
-		litos_app_window_remove_child(win);
-	}
+	win->quit = TRUE;
+	litos_app_window_remove_child(win);
 
-	printf("LEN is %d\n", win->litosFileList->len);
-	
 	return TRUE;
 }
 
