@@ -114,10 +114,10 @@ void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
-	litos_app_window_quit(window, win);
-
-	/*if (litos_app_window_get_array_len(win) == 0)
-		g_application_quit (G_APPLICATION (app));*/
+	if (litos_app_window_get_array_len(win) == 0)
+		g_application_quit (G_APPLICATION (app));
+	else
+		litos_app_window_quit(window, win);
 }
 
 static void
@@ -127,7 +127,6 @@ new_file (GSimpleAction *action,
 {
 	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
 	litos_app_window_new_tab(LITOS_APP_WINDOW(win), NULL);
-
 }
 
 void setAccels (GApplication *app)

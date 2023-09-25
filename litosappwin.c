@@ -186,30 +186,24 @@ gboolean litos_app_window_save(LitosAppWindow *win, LitosFile *file)
 	}
 }
 
+void litos_app_window_remove_page(LitosAppWindow *win, LitosFile *file)
+{
+	gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
+	g_ptr_array_remove(win->litosFileList, file);
+}
+
 static void litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response, gpointer window)
 {
-	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+	LitosApp *app = LITOS_APP(gtk_window_get_application(GTK_WINDOW(window)));
 
-	LitosApp *app = LITOS_APP(gtk_window_get_application(window));
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
 	LitosFile *file = litos_app_window_current_file(win);
 
 	switch (response)
 	{
 		case GTK_RESPONSE_ACCEPT:
-			litos_app_window_save(win,file);
-			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
-			g_ptr_array_remove(win->litosFileList, file);
-			if (win->quit == TRUE)
-			{
-				if(win->litosFileList->len == 0)
-					g_application_quit (G_APPLICATION (app));
-				else
-					litos_app_window_remove_child(win);
-
-				return;
-			}					
-
+			litos_app_window_remove_page(win,file);		
 			break;
 
 		case GTK_RESPONSE_CANCEL:
@@ -217,24 +211,23 @@ static void litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response
 			break;
 
 		case GTK_RESPONSE_REJECT:
-			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
-			g_ptr_array_remove(win->litosFileList, file);
-			if (win->quit == TRUE)
-			{
-				if(win->litosFileList->len == 0)
-					g_application_quit (G_APPLICATION (app));
-				else
-					litos_app_window_remove_child(win);
-
-				return;
-			}
+			litos_app_window_remove_page(win,file);
 			break;
 
 		default: /*close bottun was pressed*/
+			win->quit = FALSE;
 			g_print("The bottun(Close without Saving/Cancel/Save) was not pressed.");
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
+	
+	if (win->quit == TRUE)
+	{
+		if (win->litosFileList->len == 0)
+			g_application_quit (G_APPLICATION (app));
+		else
+			litos_app_window_remove_child(win);
+	}
 }
 
 void litos_app_window_saveornot_dialog(LitosAppWindow *win, LitosFile *file)
@@ -261,21 +254,15 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 		LitosFile *file = litos_app_window_current_file(win);
 
 		if (litos_file_get_saved(file))
-		{
-			gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
-
-			g_ptr_array_remove(win->litosFileList, file);
-		}
+			litos_app_window_remove_page(win,file);
 
 		else
 			litos_app_window_saveornot_dialog(win, file);
 	}
 }
 
-gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
+gboolean litos_app_window_quit (LitosAppWindow *win)
 {
-	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
-
 	win->quit = TRUE;
 	litos_app_window_remove_child(win);
 
