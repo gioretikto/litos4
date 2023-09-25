@@ -124,7 +124,7 @@ visible_child_changed (GObject *notebook,
 	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (win->searchbar), FALSE);
 }
 
-void lito_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
+void litos_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
 {
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
 
@@ -157,7 +157,7 @@ void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter
 
 	gtk_widget_show(dialog);
 
-	g_signal_connect (dialog, "response", G_CALLBACK (lito_app_window_save_finalize), win);
+	g_signal_connect (dialog, "response", G_CALLBACK (litos_app_window_save_finalize), win);
 }
 
 gboolean litos_app_window_save(LitosAppWindow *win, LitosFile *file)
@@ -186,7 +186,7 @@ gboolean litos_app_window_save(LitosAppWindow *win, LitosFile *file)
 	}
 }
 
-void litos_app_window_remove_page(LitosAppWindow *win, LitosFile *file)
+static void litos_app_window_remove_page(LitosAppWindow *win, LitosFile *file)
 {
 	gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
 	g_ptr_array_remove(win->litosFileList, file);

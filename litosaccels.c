@@ -109,7 +109,7 @@ close_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
 	litos_app_window_remove_child(win);
 }
 
-void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
+static void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
 {
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
