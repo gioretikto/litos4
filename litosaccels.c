@@ -114,10 +114,7 @@ static void quit_activated (GSimpleAction *action, GVariant *parameter, gpointer
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
-	if (litos_app_window_get_array_len(win) == 0)
-		g_application_quit (G_APPLICATION (app));
-	else
-		litos_app_window_quit(window, win);
+	litos_app_window_quit(window, win);
 }
 
 static void

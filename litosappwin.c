@@ -194,7 +194,7 @@ static void litos_app_window_remove_page(LitosAppWindow *win, LitosFile *file)
 
 static void litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response, gpointer window)
 {
-	LitosApp *app = LITOS_APP(gtk_window_get_application(GTK_WINDOW(window)));
+	GtkApplication *app = gtk_window_get_application(window);
 
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
@@ -261,8 +261,19 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 	}
 }
 
-gboolean litos_app_window_quit (LitosAppWindow *win)
+guint litos_app_window_get_array_len(LitosAppWindow *win)
 {
+	return win->litosFileList->len;
+}
+
+gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
+	GtkApplication *app = gtk_window_get_application(window);
+
+	if (litos_app_window_get_array_len(win) == 0)
+		g_application_quit (G_APPLICATION (app));
+	
 	win->quit = TRUE;
 	litos_app_window_remove_child(win);
 
@@ -430,9 +441,4 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 	g_signal_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
 
 	return file;
-}
-
-guint litos_app_window_get_array_len(LitosAppWindow *win)
-{
-	return win->litosFileList->len;
 }
