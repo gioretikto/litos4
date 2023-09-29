@@ -233,12 +233,12 @@ void litos_file_highlight_buffer(LitosFile *file) /* Apply different font styles
 	}
 }
 
-gboolean litos_file_load (LitosFile *file, GError *error)
+gboolean litos_file_load (LitosFile *file, GError **error)
 {
 	char *contents;
 	gsize length;
 
-	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, &error))
+	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, error))
 	{
 		gtk_text_buffer_set_text (file->buffer, contents, length);
 		litos_file_highlight_buffer(file);

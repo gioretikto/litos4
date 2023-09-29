@@ -41,17 +41,19 @@ static gboolean func (gconstpointer array_element, gconstpointer tabbox)
 	return litos_file_get_tabbox ((LITOS_FILE((void*)array_element))) == tabbox;
 }
 
+guint litos_app_window_get_array_len(LitosAppWindow *win)
+{
+	return win->litosFileList->len;
+}
+
 guint litos_app_window_search_file(LitosAppWindow *win)
 {
 	guint index;
 
-	gint current_page = gtk_notebook_get_current_page (win->notebook);
-
-	if (current_page == -1)
-		return -1;
-
-	else
+	if (litos_app_window_get_array_len(win) != 0)
 	{
+		gint current_page = gtk_notebook_get_current_page (win->notebook);
+
 		GtkWidget *tabbox = gtk_notebook_get_nth_page (win->notebook, current_page);
 
 		if (g_ptr_array_find_with_equal_func(win->litosFileList, tabbox, func, &index))
@@ -261,11 +263,6 @@ void litos_app_window_remove_child(LitosAppWindow *win)
 	}
 }
 
-guint litos_app_window_get_array_len(LitosAppWindow *win)
-{
-	return win->litosFileList->len;
-}
-
 gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
@@ -441,4 +438,14 @@ LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 	g_signal_connect(G_OBJECT(file), "notify::saved", G_CALLBACK (_file_monitor_saved_change), win);
 
 	return file;
+}
+
+LitosFile * litos_app_window_get_file(LitosAppWindow *win, int *i)
+{
+	return g_ptr_array_index(win->litosFileList,*i);
+}
+
+GtkNotebook * litos_app_window_get_nb(LitosAppWindow *win)
+{
+	return win->notebook;
 }
