@@ -425,7 +425,7 @@ LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf)
 
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf)
 {
-	static int file_index = 1;
+	int file_index = litos_app_window_get_array_len(win) + 1;
 
 	struct Page page;
 
