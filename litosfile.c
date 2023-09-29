@@ -50,16 +50,6 @@ litos_file_init (LitosFile *file)
 	file->scrolled = NULL;
 }
 
-static void
-litos_file_dispose (GObject *object)
-{
-	LitosFile *file = LITOS_FILE (object);
-
-	g_free (file->name);
-
-	G_OBJECT_CLASS (litos_file_parent_class)->dispose (object);
-}
-
 typedef enum
 {
 	PROP_SAVED = 1,
@@ -68,6 +58,25 @@ typedef enum
 } LitosFileProperty;
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+static void _buffer_monitor_change(GObject *gobject, GParamSpec *pspec, gpointer userdata)
+{
+	LitosFile *file = LITOS_FILE(userdata);
+	litos_file_set_unsaved(file);
+	g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
+}
+
+static void
+litos_file_dispose (GObject *object)
+{
+	LitosFile *file = LITOS_FILE (object);
+
+	g_signal_handlers_disconnect_by_func(file->buffer, _buffer_monitor_change, file);
+
+	g_free (file->name);
+
+	G_OBJECT_CLASS (litos_file_parent_class)->dispose (object);
+}
 
 static void
 litos_file_set_property (GObject *object,
@@ -175,13 +184,6 @@ GtkWidget * litos_file_get_tabbox(LitosFile *file)
 void litos_file_set_unsaved(LitosFile *file)
 {
 	file->saved = FALSE;
-	g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
-}
-
-static void _buffer_monitor_change(GObject *gobject, GParamSpec *pspec, gpointer userdata)
-{
-	LitosFile *file = LITOS_FILE(userdata);
-	litos_file_set_unsaved(file);
 	g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
 }
 
