@@ -347,28 +347,35 @@ void litos_app_window_save_as(LitosAppWindow *win)
 LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 {
 	GtkTextTag *tag;
-	//GtkWidget *close_btn;
+	GtkWidget *close_btn_box, *close_btn;
 
 	GtkTextIter start_iter, end_iter;
 
 	page->lbl = gtk_label_new(page->name);
+
 	page->tabbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
+	close_btn_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
+
 	page->scrolled = gtk_scrolled_window_new ();
 	page->view = MyNewSourceview();
 	page->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (page->view));
-	//close_btn = gtk_button_new_from_icon_name ("gtk-close");
+	close_btn = gtk_button_new_from_icon_name ("window-close-symbolic");
 
 	gtk_widget_set_hexpand (page->scrolled, TRUE);
 	gtk_widget_set_vexpand (page->scrolled, TRUE);
 
 	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (page->scrolled), page->view);
+
+	gtk_box_append (GTK_BOX(close_btn_box), close_btn);
+	gtk_box_append (GTK_BOX(close_btn_box), page->lbl);
+
 	gtk_box_append (GTK_BOX(page->tabbox), page->scrolled);
 
 	tag = gtk_text_buffer_create_tag (page->buffer, NULL, NULL);
 
 	gtk_notebook_set_current_page (
 		win->notebook,
-		gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->lbl, page->lbl)
+		gtk_notebook_append_page_menu (win->notebook, page->tabbox, close_btn_box, close_btn_box)
 	);
 
 	gtk_text_buffer_get_start_iter (page->buffer, &start_iter);
