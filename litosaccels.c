@@ -6,64 +6,21 @@
 
 gboolean litos_file_load (LitosFile *file, GError **error);
 GtkWidget * litos_file_get_view(LitosFile *file);
-GFile *litos_file_get_gfile(LitosFile* file);
 
 gboolean litos_app_window_remove_child(LitosAppWindow *win);
 void litos_app_window_save(LitosAppWindow *win, LitosFile *file);
 void litos_app_window_save_as(LitosAppWindow *app);
-
-LitosFile * litos_app_window_get_file(LitosAppWindow *win, int *i);
 
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf);
 void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win);
 LitosFile * litos_app_window_current_file(LitosAppWindow *win);
 
-guint litos_app_window_get_array_len(LitosAppWindow *win);
-
 gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data);
-GtkNotebook * litos_app_window_get_nb(LitosAppWindow *win);
 
-void show_error_dialog(GtkWindow *window, GError *error, char *filename)
-{
-	GtkWidget *message_dialog;
-	message_dialog = gtk_message_dialog_new(window, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-	GTK_BUTTONS_CLOSE, "ERROR : Can't load %s.\n %s", filename, error->message);
-	gtk_widget_show(message_dialog);
-	g_error_free(error);
-}
+void litos_app_error_dialog(GtkWindow *window, GError *error, char *filename);
 
-gboolean check_duplicate_file(char *filename, LitosAppWindow *win)
-{
-	GFile *current_gfile;
-	int i, n_pages;
-
-	n_pages = litos_app_window_get_array_len(win);
-
-	if (n_pages == 0)
-		return FALSE;
-
-	for (i = 0; i < n_pages; i++)
-	{
-		current_gfile = litos_file_get_gfile(litos_app_window_get_file(win,&i));
-
-		if (current_gfile != NULL)
-		{
-			char *current_file_name = g_file_get_path(current_gfile);
-
-			if (strcmp(current_file_name, filename) == 0)
-			{
-				g_free(current_file_name);
-				gtk_notebook_set_current_page(litos_app_window_get_nb(win), i);
-				return TRUE;
-			}
-
-			g_free(current_file_name);
-		}
-	}
-
-	return FALSE;
-}
+gboolean litos_app_check_duplicate(char *filename, LitosAppWindow *win);
 
 static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
@@ -78,11 +35,11 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 		{
 			char *gfile_name = g_file_get_path(gfile);
 
-			if (!check_duplicate_file(gfile_name,lwin))
+			if (!litos_app_check_duplicate(gfile_name,lwin))
 			{
 				LitosFile *file = litos_app_window_open(lwin,gfile);
 				if (!litos_file_load(file,&error))
-					show_error_dialog(GTK_WINDOW(win), error, gfile_name);
+					litos_app_error_dialog(GTK_WINDOW(win), error, gfile_name);
 			}
 
 			g_free(gfile_name);
