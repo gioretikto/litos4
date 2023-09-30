@@ -6,6 +6,7 @@
 
 gboolean litos_file_load (LitosFile *file, GError **error);
 GtkWidget * litos_file_get_view(LitosFile *file);
+GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
 
 gboolean litos_app_window_remove_child(LitosAppWindow *win);
 void litos_app_window_save(LitosAppWindow *win, LitosFile *file);
@@ -129,6 +130,68 @@ new_file (GSimpleAction *action,
 	litos_app_window_new_tab(LITOS_APP_WINDOW(win), NULL);
 }
 
+/* Called when Ctrl+B, Ctrl+i, etc is toggled */
+void insertChar (GSimpleAction *action, GVariant *parameter, gpointer app)
+{
+	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
+
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+
+	LitosFile *file = litos_app_window_current_file(win);
+
+	GtkTextBuffer *buffer = litos_file_get_buffer(file);
+
+	gchar *insertChar;
+
+	g_variant_get (parameter, "s", &insertChar);
+
+	gtk_text_buffer_insert_at_cursor (buffer, insertChar, (gint)strlen(insertChar));
+
+	g_free(insertChar);
+}
+
+/* Called when Ctrl+B, Ctrl+i, etc is toggled */
+void insertHtmlTags (GSimpleAction *action, GVariant *parameter, gpointer app)
+{
+	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
+
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+
+	LitosFile *file = litos_app_window_current_file(win);
+
+	GtkTextBuffer *buffer = litos_file_get_buffer(file);
+
+	char *string = NULL;
+
+	char replaceString[350] = { 0 };
+
+	gchar *tag;
+
+	g_variant_get (parameter, "s", &tag);
+
+	GtkTextIter start_sel, end_sel;
+
+	if (gtk_text_buffer_get_selection_bounds(buffer, &start_sel, &end_sel))
+	{
+		string = gtk_text_buffer_get_text (buffer,
+							&start_sel,
+							&end_sel,
+							FALSE);
+
+		snprintf(replaceString, sizeof(replaceString), tag, string);
+		gtk_text_buffer_delete (buffer, &start_sel, &end_sel);
+		gtk_text_buffer_insert (buffer, &start_sel, replaceString, (gint)strlen(replaceString));
+	}
+
+	else
+	{
+		snprintf(replaceString, sizeof(replaceString), "</%c>", tag[1]);
+		gtk_text_buffer_insert_at_cursor (buffer, replaceString,(gint)strlen(replaceString));
+	}
+
+	g_free(tag);
+}
+
 void setAccels (GApplication *app)
 {
 	long unsigned int i;
@@ -136,6 +199,8 @@ void setAccels (GApplication *app)
 	/* map actions to callbacks */
 	const GActionEntry app_entries[] = {
 		{"preferences", preferences_activated, NULL, NULL, NULL },
+		{"insert_html", insertHtmlTags, "s", NULL, NULL, {0,0,0}},
+		{"insert_char", insertChar, "s", NULL, NULL, {0,0,0}},
 		{"open", open_activated, NULL, NULL, NULL},
 		{"new", new_file, NULL, NULL, NULL},
 		{"save", save, NULL, NULL, NULL, {0,0,0}},
@@ -154,7 +219,23 @@ void setAccels (GApplication *app)
 	  { "app.save", { "<Control>s", NULL} },
 	  { "app.save_as", { "<Shift><Control>s", NULL} },
 	  { "app.close", { "<Control>w", NULL} },
-	  { "app.quit", { "<Control>q", NULL} }
+	  { "app.quit", { "<Control>q", NULL} },
+	  { "app.insert_html(\"<b>%s</b>\")", { "<Control>b", NULL} },
+	  { "app.insert_html(\"<i>%s</i>\")", { "<Control>i", NULL} },
+	  { "app.insert_html(\"<h2>%s</h2>\")", { "<Control>2", NULL} },
+	  { "app.insert_html(\"<h3>%s</h3>\")", { "<Control>3", NULL} },
+	  { "app.insert_html('<a href=\"this.html\">%s</a>')", { "<Control>h", NULL} },
+	  { "app.insert_html(\"<p>%s</p>\")", { "<Control>p", NULL} },
+	  { "app.insert_html(\"<li>%s</li>\")", { "<Control>l", NULL} },
+	  { "app.insert_html(\"<sup>%s</sup>\")", { "<Control><Shift>p", NULL} },
+	  { "app.insert_html(\"<sub>%s</sub>\")", { "<Control>u", NULL} },
+	  { "app.insert_char('<div class=\"eq\">\n<p>this</p>\n</div>\')", { "<Control>g", NULL} },
+	  { "app.insert_char(\"−\")", { "<Control>m", NULL} },
+	  { "app.insert_char(\"⋅\")", { "<Control>d", NULL} },
+	  { "app.insert_char(\"⟶⟼⇒\")", { "<Control>t", NULL} },
+	  { "app.insert_char(\"⇌⟵⇐\")", { "<Control>y", NULL} },
+	  { "app.insert_char(\"<br>\")", { "<Control>r", NULL} },
+	  { "app.insert_char(\"&emsp;■□\")", { "<Control>e", NULL} },
 	};
 
 	g_action_map_add_action_entries(G_ACTION_MAP(app), app_entries, G_N_ELEMENTS(app_entries), app);
