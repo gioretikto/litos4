@@ -141,6 +141,10 @@ litos_app_open (GApplication  *app,
 			g_free(filename);
 		}
 	}
+
+	gtk_window_set_title (GTK_WINDOW(win), "Litos");
+	gtk_window_maximize (GTK_WINDOW(win));
+	gtk_window_present (GTK_WINDOW(win));
 }
 
 static void

@@ -131,7 +131,8 @@ new_file (GSimpleAction *action,
 }
 
 /* Called when Ctrl+B, Ctrl+i, etc is toggled */
-void insertChar (GSimpleAction *action, GVariant *parameter, gpointer app)
+static void
+insertChar (GSimpleAction *action, GVariant *parameter, gpointer app)
 {
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 
@@ -151,7 +152,8 @@ void insertChar (GSimpleAction *action, GVariant *parameter, gpointer app)
 }
 
 /* Called when Ctrl+B, Ctrl+i, etc is toggled */
-void insertHtmlTags (GSimpleAction *action, GVariant *parameter, gpointer app)
+static void
+insertHtmlTags (GSimpleAction *action, GVariant *parameter, gpointer app)
 {
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 

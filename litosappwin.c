@@ -347,6 +347,7 @@ void litos_app_window_save_as(LitosAppWindow *win)
 LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 {
 	GtkTextTag *tag;
+	//GtkWidget *close_btn;
 
 	GtkTextIter start_iter, end_iter;
 
@@ -355,6 +356,7 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 	page->scrolled = gtk_scrolled_window_new ();
 	page->view = MyNewSourceview();
 	page->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (page->view));
+	//close_btn = gtk_button_new_from_icon_name ("gtk-close");
 
 	gtk_widget_set_hexpand (page->scrolled, TRUE);
 	gtk_widget_set_vexpand (page->scrolled, TRUE);
