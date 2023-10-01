@@ -31,6 +31,9 @@ struct _LitosAppWindow
 	GtkWidget *gears;
 	GtkWidget *search;
 	GtkWidget *searchbar;
+	GtkWidget *about;
+	GtkWidget *goup;
+	GtkWidget *godown;
 	GPtrArray *litosFileList;
 	gboolean quit;
 };
@@ -318,6 +321,21 @@ litos_app_window_dispose (GObject *object)
 	G_OBJECT_CLASS (litos_app_window_parent_class)->dispose (object);
 }
 
+void about_dialog (GtkButton *button, gpointer userData)
+{
+	const gchar *authors[] = {"Giovanni Resta", "giovannirestadev@gmail.com", NULL};
+
+	gtk_show_about_dialog (NULL,
+			"program-name", "Litos",
+			"version", "4.0.0",
+			"license-type", GTK_LICENSE_GPL_3_0,
+			"website", "https://github.com/gioretikto/litos",
+			"authors", authors,
+			"logo-icon-name", "start-here",
+			"title", ("Litos"),
+			NULL);
+}
+
 static void
 litos_app_window_class_init (LitosAppWindowClass *class)
 {
@@ -329,7 +347,11 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, gears);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, searchbar);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, about);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, goup);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, godown);
 
+	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), about_dialog);
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), visible_child_changed);
 }
