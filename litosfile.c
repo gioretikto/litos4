@@ -19,6 +19,8 @@ struct _LitosFile
 
 	GtkWidget* tabbox;
 
+	GtkWidget* close_btn_box;
+
 	/*GtkSourceView*/
 
 	GtkWidget *view;
@@ -195,6 +197,7 @@ LitosFile * litos_file_set(struct Page *page)
 	file->gfile = page->gf;
 	file->scrolled = page->scrolled;
 	file->tabbox = page->tabbox;
+	file->close_btn_box = page->close_btn_box;
 	file->view = page->view;
 	file->lbl = page->lbl;
 	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
@@ -294,4 +297,9 @@ void litos_file_save_as(LitosFile* file, GFile *new_file)
 	file->name = g_file_get_basename(new_file);
 
 	litos_file_save(file, NULL);
+}
+
+GtkWidget * litos_file_get_close_box(LitosFile *file)
+{
+	return file->close_btn_box;
 }

@@ -16,6 +16,7 @@ gboolean litos_file_get_saved(LitosFile *file);
 GtkWidget * litos_file_get_view(LitosFile *file);
 GtkWidget * litos_file_get_lbl(LitosFile *file);
 GtkWidget * litos_file_get_tabbox(LitosFile *file);
+GtkWidget * litos_file_get_close_box(LitosFile *file);
 
 void litos_app_window_remove_child(LitosAppWindow *win);
 
@@ -82,7 +83,7 @@ static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 {
 	LitosFile *file = litos_app_window_current_file(win);
 
-	return GTK_SOURCE_VIEW(litos_file_get_view);
+	return GTK_SOURCE_VIEW(litos_file_get_view(file));
 }
 
 static void
@@ -344,18 +345,24 @@ void litos_app_window_save_as(LitosAppWindow *win)
 	litos_app_window_save_as_dialog(NULL, NULL, win);
 }
 
-LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
+static void close_btn_clicked(GtkWidget *close_btn, gpointer user_data)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
+	litos_app_window_remove_child(win);
+
+	g_signal_handlers_disconnect_by_func(close_btn, close_btn_clicked, win);
+}
+
+static LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 {
 	GtkTextTag *tag;
-	GtkWidget *close_btn_box, *close_btn;
+	GtkWidget *close_btn;
 
 	GtkTextIter start_iter, end_iter;
 
 	page->lbl = gtk_label_new(page->name);
-
 	page->tabbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
-	close_btn_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
-
+	page->close_btn_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
 	page->scrolled = gtk_scrolled_window_new ();
 	page->view = MyNewSourceview();
 	page->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (page->view));
@@ -366,8 +373,8 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 
 	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (page->scrolled), page->view);
 
-	gtk_box_append (GTK_BOX(close_btn_box), close_btn);
-	gtk_box_append (GTK_BOX(close_btn_box), page->lbl);
+	gtk_box_append (GTK_BOX(page->close_btn_box), page->lbl);
+	gtk_box_append (GTK_BOX(page->close_btn_box), close_btn);
 
 	gtk_box_append (GTK_BOX(page->tabbox), page->scrolled);
 
@@ -375,7 +382,7 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 
 	gtk_notebook_set_current_page (
 		win->notebook,
-		gtk_notebook_append_page_menu (win->notebook, page->tabbox, close_btn_box, close_btn_box)
+		gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->close_btn_box, page->close_btn_box)
 	);
 
 	gtk_text_buffer_get_start_iter (page->buffer, &start_iter);
@@ -387,6 +394,9 @@ LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *page)
 	g_settings_bind (win->settings, "font",
 			tag, "font",
 			G_SETTINGS_BIND_DEFAULT);
+
+	g_signal_connect(close_btn, "clicked", 
+	    G_CALLBACK(close_btn_clicked), win); 
 
 	gtk_widget_grab_focus(GTK_WIDGET(page->view));
 
@@ -402,8 +412,6 @@ static void lblToColor(LitosAppWindow *win, LitosFile* file, const char *color)
 	const char *markup = g_markup_printf_escaped ("<span color='%s'>\%s</span>", color, litos_file_get_name(file));
 
 	gtk_label_set_markup (GTK_LABEL(litos_file_get_lbl(file)), markup);
-
-	gtk_notebook_set_tab_label (win->notebook, litos_file_get_tabbox(file), litos_file_get_lbl(file));
 }
 
 static void _file_monitor_saved_change(GObject *gobject, GParamSpec *pspec, gpointer win)

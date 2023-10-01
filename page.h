@@ -1,6 +1,7 @@
 struct Page
 {
 	GtkWidget *tabbox;
+	GtkWidget *close_btn_box;
 	GtkWidget *scrolled;
 	GtkTextBuffer *buffer;
 	char *name;
