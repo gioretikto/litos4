@@ -32,8 +32,10 @@ struct _LitosAppWindow
 	GtkWidget *search;
 	GtkWidget *searchbar;
 	GtkWidget *about;
-	GtkWidget *goup;
-	GtkWidget *godown;
+	GtkWidget *up_search;
+	GtkWidget *down_search;
+	GtkWidget *button_check_case;
+	GtkSourceSearchContext *search_context;
 	GPtrArray *litosFileList;
 	gboolean quit;
 };
@@ -89,6 +91,50 @@ static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 	return GTK_SOURCE_VIEW(litos_file_get_view(file));
 }
 
+static
+void next_match(GtkWidget *close_btn, gpointer user_data)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
+
+	if (win->search_context != NULL)
+	{
+		GtkTextIter start, match_start, match_end;
+
+		GtkSourceView *view = currentTabSourceView(win);
+
+		GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(view));
+
+		if (gtk_source_search_context_forward (win->search_context, &start, &match_start, &match_end, FALSE))
+		{
+			gtk_text_buffer_select_range (buffer, &match_start, &match_end);
+			gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
+					0.0, FALSE, 0.0, 0.0);
+		}
+	}
+}
+
+GtkSourceView * litos_app_window_set_search_context(LitosAppWindow *win, const char *stringToSearch)
+{
+	GtkSourceSearchSettings *settings = gtk_source_search_settings_new ();
+
+	GtkSourceView *source_view = currentTabSourceView(win);
+
+	/*
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(win->button_check_case)))
+		gtk_source_search_settings_set_case_sensitive (settings, TRUE);
+
+	else
+		gtk_source_search_settings_set_case_sensitive (settings, FALSE);*/
+
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(source_view));
+
+	gtk_source_search_settings_set_search_text (settings, stringToSearch);
+
+	win->search_context = gtk_source_search_context_new(GTK_SOURCE_BUFFER(buffer), settings);
+
+	return source_view;
+}
+
 static void
 search_text_changed (GtkEntry *entry,
                      LitosAppWindow *win)
@@ -96,26 +142,35 @@ search_text_changed (GtkEntry *entry,
 	const char *text;
 	GtkTextBuffer *buffer;
 	GtkTextIter start, match_start, match_end;
+	GtkTextMark* mark;
+
+	if (win->search_context != NULL){
+		g_object_unref(win->search_context);
+		win->search_context = NULL;
+	}
 
 	text = gtk_editable_get_text (GTK_EDITABLE (entry));
 
 	if (text[0] == '\0')
 		return;
 
-	GtkSourceView *view = currentTabSourceView(win);
+	GtkSourceView *view = litos_app_window_set_search_context(win, text);
 
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(view));
+
+	mark = gtk_text_buffer_get_insert(buffer);
 
 	/* Very simple-minded search implementation */
 
 	gtk_text_buffer_get_start_iter (buffer, &start);
 
-	if (gtk_text_iter_forward_search (&start, text, GTK_TEXT_SEARCH_CASE_INSENSITIVE,
-			&match_start, &match_end, NULL))
+	if (gtk_source_search_context_forward (win->search_context, &start, &match_start, &match_end, FALSE))
 	{
 		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
 		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
 				0.0, FALSE, 0.0, 0.0);
+		gtk_text_buffer_move_mark (buffer, mark, &match_end);
+
 	}
 }
 
@@ -298,9 +353,12 @@ litos_app_window_init (LitosAppWindow *win)
 	gtk_widget_set_sensitive (win->search, TRUE);
 
 	win->quit = FALSE;
+	win->search_context = NULL;
 	win->litosFileList = g_ptr_array_new_full(0, g_object_unref);
 
 	g_signal_connect (GTK_WINDOW(win), "close-request", G_CALLBACK (litos_app_window_quit), win);
+	g_signal_connect (win->down_search, "clicked", G_CALLBACK(next_match), win);
+	//g_signal_connect (win->up_search, "clicked", G_CALLBACK(previous_match), win);
 
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
@@ -348,8 +406,9 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, searchbar);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, about);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, goup);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, godown);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, up_search);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, down_search);
+	//gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, button_check_case);
 
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), about_dialog);
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);

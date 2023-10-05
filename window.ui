@@ -36,12 +36,12 @@
               </object>
             </child>
 	    <child>
-	      <object class="GtkButton" id="godown">
+	      <object class="GtkButton" id="down_search">
 	        <property name="icon-name">go-down</property>
 	      </object>
 	   </child>
 	    <child>
-	      <object class="GtkButton" id="goup">
+	      <object class="GtkButton" id="up_search">
 	        <property name="icon-name">go-up</property>
 	      </object>
 	    </child>
