@@ -9,11 +9,19 @@ GtkWidget* MyNewSourceview()
 
 	GtkSourceBuffer *source_buffer = gtk_source_buffer_new (NULL);
 
-	source_view = gtk_source_view_new_with_buffer (source_buffer);
+	GtkSourceStyleSchemeManager *scheme_manager = gtk_source_style_scheme_manager_get_default();
+	const gchar * const* schemes = gtk_source_style_scheme_manager_get_scheme_ids(scheme_manager);
 
-	gtk_source_buffer_set_style_scheme (source_buffer,
-	gtk_source_style_scheme_manager_get_scheme (
-	gtk_source_style_scheme_manager_get_default (), "gtk-application-prefer-dark-theme"));
+	if (schemes != NULL && schemes[0] != NULL)
+	{
+		GtkSourceStyleScheme *scheme = gtk_source_style_scheme_manager_get_scheme(scheme_manager, schemes[1]);
+
+		if (scheme != NULL)
+		{
+			source_view = gtk_source_view_new_with_buffer (source_buffer);
+			gtk_source_buffer_set_style_scheme(source_buffer, scheme);
+		}
+	}
 
 	gtk_source_view_set_show_line_numbers (GTK_SOURCE_VIEW((source_view)), TRUE);
 
