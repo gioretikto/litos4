@@ -83,7 +83,7 @@ open_tmpl (GSimpleAction *action,
 {
 	GtkWidget *dialog;
 
-	GError *error;
+	GError *error = NULL;
 
 	GFile *gfile = g_file_new_for_path("~/Templates");
 
