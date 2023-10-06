@@ -144,7 +144,8 @@ search_text_changed (GtkEntry *entry,
 	GtkTextIter start, match_start, match_end;
 	GtkTextMark* mark;
 
-	if (win->search_context != NULL){
+	if (win->search_context != NULL)
+	{
 		g_object_unref(win->search_context);
 		win->search_context = NULL;
 	}
@@ -170,7 +171,6 @@ search_text_changed (GtkEntry *entry,
 		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
 				0.0, FALSE, 0.0, 0.0);
 		gtk_text_buffer_move_mark (buffer, mark, &match_end);
-
 	}
 }
 

@@ -23,7 +23,8 @@ void litos_app_error_dialog(GtkWindow *window, GError *error, char *filename);
 
 gboolean litos_app_check_duplicate(char *filename, LitosAppWindow *win);
 
-static void open_cb (GtkWidget *dialog, gint response, gpointer win)
+static void
+open_cb (GtkWidget *dialog, gint response, gpointer win)
 {
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
@@ -48,6 +49,63 @@ static void open_cb (GtkWidget *dialog, gint response, gpointer win)
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
+}
+
+static void
+open_tmpl_cb (GtkWidget *dialog, gint response, gpointer win)
+{
+	if (response == GTK_RESPONSE_ACCEPT)
+	{
+		GError *error = NULL;
+		GFile *gfile = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
+
+		LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
+		char *gfile_name = g_file_get_path(gfile);
+
+		if (gfile != NULL)
+		{
+			LitosFile *file = litos_app_window_open(lwin,gfile);
+			litos_file_load(file,&error);
+				if (!litos_file_load(file,&error))
+					litos_app_error_dialog(GTK_WINDOW(win), error, gfile_name);
+		}
+
+		g_free(gfile_name);
+	}
+
+	gtk_window_destroy (GTK_WINDOW (dialog));
+}
+
+static void
+open_tmpl (GSimpleAction *action,
+                       GVariant      *parameter,
+                       gpointer       app)
+{
+	GtkWidget *dialog;
+
+	GError *error;
+
+	GFile *gfile = g_file_new_for_path("~/Templates");
+
+	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
+
+	dialog = gtk_file_chooser_dialog_new ("Open File",
+		NULL,
+		GTK_FILE_CHOOSER_ACTION_OPEN,
+		"Cancel",
+		GTK_RESPONSE_CANCEL,
+		"Open",
+		GTK_RESPONSE_ACCEPT,
+		NULL);
+
+	if (gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), gfile, &error))
+		litos_app_error_dialog(GTK_WINDOW(win), error, "Templates");
+
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), win);
+
+	gtk_widget_show(dialog);
+
+	g_signal_connect (dialog, "response", G_CALLBACK (open_tmpl_cb), win);
 }
 
 static void
@@ -89,6 +147,7 @@ save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer app)
 	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
 	litos_app_window_save_as(LITOS_APP_WINDOW(win));
 }
+
 
 static void
 preferences_activated (GSimpleAction *action,
@@ -204,6 +263,7 @@ void setAccels (GApplication *app)
 		{"insert_html", insertHtmlTags, "s", NULL, NULL, {0,0,0}},
 		{"insert_char", insertChar, "s", NULL, NULL, {0,0,0}},
 		{"open", open_activated, NULL, NULL, NULL},
+		{"open_tmpl", open_tmpl, NULL, NULL, NULL},
 		{"new", new_file, NULL, NULL, NULL},
 		{"save", save, NULL, NULL, NULL, {0,0,0}},
 		{"save_as", save_as_dialog, NULL, NULL, NULL, {0,0,0}},
