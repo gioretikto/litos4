@@ -85,7 +85,7 @@ open_tmpl (GSimpleAction *action,
 
 	GError *error = NULL;
 
-	GFile *gfile = g_file_new_for_path("~/Templates");
+	GFile *gfile = g_file_new_for_path(g_get_user_special_dir (G_USER_DIRECTORY_TEMPLATES));
 
 	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
 
