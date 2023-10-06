@@ -98,7 +98,7 @@ open_tmpl (GSimpleAction *action,
 		GTK_RESPONSE_ACCEPT,
 		NULL);
 
-	if (gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), gfile, &error))
+	if (!gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), gfile, &error))
 		litos_app_error_dialog(GTK_WINDOW(win), error, "Templates");
 
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), win);
