@@ -84,7 +84,8 @@ LitosFile * litos_app_window_current_file(LitosAppWindow *win)
 		return g_ptr_array_index(win->litosFileList, index);
 }
 
-static GtkSourceView* currentTabSourceView(LitosAppWindow *win)
+static
+GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 {
 	LitosFile *file = litos_app_window_current_file(win);
 
@@ -98,21 +99,18 @@ void next_match(GtkWidget *close_btn, gpointer user_data)
 
 	if (win->search_context != NULL)
 	{
-		GtkTextIter start, match_start, match_end;
+		GtkTextIter match_start, match_end;
 
 		GtkSourceView *view = currentTabSourceView(win);
 
 		GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(view));
-
-		if (gtk_source_search_context_forward (win->search_context, &start, &match_start, &match_end, FALSE))
-		{
-			gtk_text_buffer_select_range (buffer, &match_start, &match_end);
-			gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
-					0.0, FALSE, 0.0, 0.0);
-		}
+		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
+		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
+					0.0, FALSE, 0.0, 0.0);		
 	}
 }
 
+static
 GtkSourceView * litos_app_window_set_search_context(LitosAppWindow *win, const char *stringToSearch)
 {
 	GtkSourceSearchSettings *settings = gtk_source_search_settings_new ();
@@ -185,7 +183,8 @@ visible_child_changed (GObject *notebook,
 	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (win->searchbar), FALSE);
 }
 
-void litos_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
+static void
+litos_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
 {
 	GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
 
@@ -203,7 +202,8 @@ void litos_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer 
 	gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
-void litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer win)
+static void
+litos_app_window_save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer win)
 {
 	GtkWidget *dialog = gtk_file_chooser_dialog_new ("Save File",
 		                                  NULL,
@@ -247,13 +247,15 @@ gboolean litos_app_window_save(LitosAppWindow *win, LitosFile *file)
 	}
 }
 
-static void litos_app_window_remove_page(LitosAppWindow *win, LitosFile *file)
+static void
+litos_app_window_remove_page(LitosAppWindow *win, LitosFile *file)
 {
 	gtk_notebook_remove_page (win->notebook,gtk_notebook_get_current_page(win->notebook));
 	g_ptr_array_remove(win->litosFileList, file);
 }
 
-static void litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response, gpointer window)
+static void
+litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response, gpointer window)
 {
 	GtkApplication *app = gtk_window_get_application(window);
 
@@ -291,7 +293,8 @@ static void litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response
 	}
 }
 
-void litos_app_window_saveornot_dialog(LitosAppWindow *win, LitosFile *file)
+static void
+litos_app_window_saveornot_dialog(LitosAppWindow *win, LitosFile *file)
 {
 	GtkWidget *dialog;
 

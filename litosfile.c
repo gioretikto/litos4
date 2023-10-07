@@ -4,7 +4,6 @@
 #include "litosfile.h"
 #include "page.h"
 
-GtkWidget* MyNewSourceview();
 void litos_file_set_unsaved(LitosFile *file);
 
 struct _LitosFile

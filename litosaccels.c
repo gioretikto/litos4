@@ -5,7 +5,6 @@
 #include "litosfile.h"
 
 gboolean litos_file_load (LitosFile *file, GError **error);
-GtkWidget * litos_file_get_view(LitosFile *file);
 GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
 
 gboolean litos_app_window_remove_child(LitosAppWindow *win);
@@ -14,9 +13,7 @@ void litos_app_window_save_as(LitosAppWindow *app);
 
 LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf);
-void monitor_change (GObject *gobject, GParamSpec *pspec, gpointer win);
 LitosFile * litos_app_window_current_file(LitosAppWindow *win);
-
 gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data);
 
 void litos_app_error_dialog(GtkWindow *window, GError *error, char *filename);
@@ -66,6 +63,7 @@ open_tmpl_cb (GtkWidget *dialog, gint response, gpointer win)
 		{
 			LitosFile *file = litos_app_window_open(lwin,gfile);
 			litos_file_load(file,&error);
+
 				if (!litos_file_load(file,&error))
 					litos_app_error_dialog(GTK_WINDOW(win), error, gfile_name);
 		}
