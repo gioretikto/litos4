@@ -14,7 +14,7 @@ gboolean litos_app_window_remove_child(LitosAppWindow *win);
 void litos_app_window_save(LitosAppWindow *win, LitosFile *file);
 void litos_app_window_save_as(LitosAppWindow *app);
 
-LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
+LitosFile * litos_app_window_new_tab(LitosAppWindow *win);
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf);
 LitosFile * litos_app_window_open_tmpl(LitosAppWindow *win, GFile *gf);
 
@@ -98,7 +98,7 @@ open_tmpl_cb (GtkWidget *dialog, gint response, gpointer win)
 
 		if (gfile != NULL)
 		{
-			LitosFile * file = litos_app_window_new_tab(LITOS_APP_WINDOW(win), NULL);
+			LitosFile * file = litos_app_window_new_tab(LITOS_APP_WINDOW(win));
 
 			char *contents;
 
@@ -199,7 +199,7 @@ new_file (GSimpleAction *action,
                 gpointer       app)
 {
 	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-	litos_app_window_new_tab(LITOS_APP_WINDOW(win), NULL);
+	litos_app_window_new_tab(LITOS_APP_WINDOW(win));
 }
 
 /* Called when Ctrl+B, Ctrl+i, etc is toggled */
