@@ -105,8 +105,17 @@ void next_match(GtkWidget *close_btn, gpointer user_data)
 
 		GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(view));
 		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
-		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
-					0.0, FALSE, 0.0, 0.0);		
+
+					GtkTextMark *insert;
+
+				gtk_text_buffer_select_range (buffer,
+							      &match_start,
+							      &match_end);
+
+				insert = gtk_text_buffer_get_insert (buffer);
+
+				gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
+								    insert);	
 	}
 }
 
@@ -165,10 +174,20 @@ search_text_changed (GtkEntry *entry,
 
 	if (gtk_source_search_context_forward (win->search_context, &start, &match_start, &match_end, FALSE))
 	{
-		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
+		GtkTextMark *insert;
+
+		gtk_text_buffer_select_range (buffer,
+					      &match_start,
+					      &match_end);
+
+		insert = gtk_text_buffer_get_insert (buffer);
+
+		gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
+						    insert);
+		/*gtk_text_buffer_select_range (buffer, &match_start, &match_end);
 		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
 				0.0, FALSE, 0.0, 0.0);
-		gtk_text_buffer_move_mark (buffer, mark, &match_end);
+		gtk_text_buffer_move_mark (buffer, mark, &match_end);*/
 	}
 }
 
@@ -196,7 +215,7 @@ litos_app_window_save_finalize (GtkWidget *dialog, gint response, gpointer win)
 
 		litos_file_save_as (file, gfile);
 
-		gtk_label_set_text (GTK_LABEL(litos_file_get_lbl(file)),  litos_file_get_name(file));
+		gtk_label_set_text (GTK_LABEL(litos_file_get_lbl(file)), litos_file_get_name(file));
 	}
 
 	gtk_window_destroy (GTK_WINDOW (dialog));
@@ -515,6 +534,7 @@ LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf)
 	struct Page page;
 
 	page.name = g_file_get_basename(gf);
+
 	page.gf = gf;
 
 	LitosFile *file = litos_app_window_set_page(win,&page);
