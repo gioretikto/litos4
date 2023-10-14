@@ -489,15 +489,15 @@ static LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *p
 		gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->close_btn_box, page->close_btn_box)
 	);
 
+	g_settings_bind (win->settings, "font",
+			tag, "font",
+			G_SETTINGS_BIND_DEFAULT);
+
 	gtk_text_buffer_get_start_iter (page->buffer, &start_iter);
 	gtk_text_buffer_get_end_iter (page->buffer, &end_iter);
 	gtk_text_buffer_apply_tag (page->buffer, tag, &start_iter, &end_iter);
 
 	gtk_notebook_set_tab_reorderable(win->notebook, page->tabbox, TRUE);
-
-	g_settings_bind (win->settings, "font",
-			tag, "font",
-			G_SETTINGS_BIND_DEFAULT);
 
 	g_signal_connect(close_btn, "clicked", 
 	    G_CALLBACK(close_btn_clicked), win); 

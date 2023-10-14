@@ -34,36 +34,7 @@
                 </layout>
               </object>
             </child>
-            <child>
-              <object class="GtkLabel" id="transitionlabel">
-                <property name="label">_Transition:</property>
-                <property name="use-underline">1</property>
-                <property name="mnemonic-widget">transition</property>
-                <property name="xalign">1</property>
-                <layout>
-                  <property name="column">0</property>
-                  <property name="row">1</property>
-                </layout>
-              </object>
-            </child>
-            <child>
-              <object class="GtkDropDown" id="transition">
-                <property name="model">
-                  <object class="GtkStringList">
-                    <items>
-                      <item translatable="yes">None</item>
-                      <item translatable="yes">Fade</item>
-                      <item translatable="yes">Slide</item>
-                    </items>
-                  </object>
-                </property>
-                <layout>
-                  <property name="column">1</property>
-                  <property name="row">1</property>
-                </layout>
-              </object>
-            </child>
-          </object>
+            </object>
         </child>
       </object>
     </child>

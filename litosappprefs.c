@@ -10,7 +10,6 @@ struct _LitosAppPrefs
 
 	GSettings *settings;
 	GtkWidget *font;
-	GtkWidget *transition;
 };
 
 G_DEFINE_TYPE (LitosAppPrefs, litos_app_prefs, GTK_TYPE_DIALOG)
@@ -39,22 +38,6 @@ font_desc_to_string (const GValue       *value,
 	return g_variant_new_take_string (s);
 }
 
-static gboolean
-transition_to_pos (GValue   *value,
-                   GVariant *variant,
-                   gpointer  user_data)
-{
-	const char *s = g_variant_get_string (variant, NULL);
-	if (strcmp (s, "none") == 0)
-		g_value_set_uint (value, 0);
-	else if (strcmp (s, "crossfade") == 0)
-		g_value_set_uint (value, 1);
-	else
-		g_value_set_uint (value, 2);
-
-	return TRUE;
-}
-
 static GVariant *
 pos_to_transition (const GValue       *value,
                    const GVariantType *expected_type,
@@ -81,12 +64,6 @@ litos_app_prefs_init (LitosAppPrefs *prefs)
 				string_to_font_desc,
 				font_desc_to_string,
 				NULL, NULL);
-	g_settings_bind_with_mapping (prefs->settings, "transition",
-				prefs->transition, "selected",
-				G_SETTINGS_BIND_DEFAULT,
-				transition_to_pos,
-				pos_to_transition,
-				NULL, NULL);
 }
 
 static void
@@ -109,7 +86,6 @@ litos_app_prefs_class_init (LitosAppPrefsClass *class)
 	gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (class),
                                                "/org/gtk/litos/prefs.ui");
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppPrefs, font);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppPrefs, transition);
 }
 
 LitosAppPrefs *

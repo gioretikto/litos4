@@ -21,7 +21,7 @@
     </section>
     <section>
       <item>
-        <attribute name="label" translatable="yes">_Open From Template</attribute>
+        <attribute name="label" translatable="yes">New From Template</attribute>
         <attribute name="action">app.open_tmpl</attribute>
       </item>
     </section>
