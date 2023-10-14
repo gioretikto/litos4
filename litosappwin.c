@@ -469,7 +469,7 @@ static LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *p
 	page->close_btn_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
 	page->scrolled = gtk_scrolled_window_new ();
 	page->view = MyNewSourceview();
-	page->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (page->view));
+
 	close_btn = gtk_button_new_from_icon_name ("window-close-symbolic");
 
 	gtk_widget_set_hexpand (page->scrolled, TRUE);
@@ -482,12 +482,13 @@ static LitosFile * litos_app_window_set_page(LitosAppWindow *win, struct Page *p
 
 	gtk_box_append (GTK_BOX(page->tabbox), page->scrolled);
 
-	tag = gtk_text_buffer_create_tag (page->buffer, NULL, NULL);
-
 	gtk_notebook_set_current_page (
 		win->notebook,
 		gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->close_btn_box, page->close_btn_box)
 	);
+
+	page->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (page->view));
+	tag = gtk_text_buffer_create_tag (page->buffer, NULL, NULL);
 
 	g_settings_bind (win->settings, "font",
 			tag, "font",

@@ -199,9 +199,9 @@ LitosFile * litos_file_set(struct Page *page)
 	file->close_btn_box = page->close_btn_box;
 	file->view = page->view;
 	file->lbl = page->lbl;
-	file->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (file->view));
+	file->buffer = page->buffer;
 
-	g_signal_connect (page->buffer, "notify::text", G_CALLBACK (_buffer_monitor_change), file);
+	g_signal_connect (file->buffer, "notify::text", G_CALLBACK (_buffer_monitor_change), file);
 
 	return file;
 }

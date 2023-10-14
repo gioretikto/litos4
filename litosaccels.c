@@ -76,7 +76,7 @@ open_activated(GSimpleAction *action, GVariant *parameter, gpointer app)
 		GError *error = NULL;
 		LitosFile *file = litos_app_window_current_file(win);
 
-		if(litos_file_get_gfile(file) != NULL)
+		if (litos_file_get_gfile(file) != NULL)
 		{
 			if (!gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), g_file_get_parent(litos_file_get_gfile(file)), &error))
 				litos_app_error_dialog(GTK_WINDOW(win), error, "Current Folder");
