@@ -92,8 +92,8 @@ GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 	return GTK_SOURCE_VIEW(litos_file_get_view(file));
 }
 
-static
-void next_match(GtkWidget *close_btn, gpointer user_data)
+static void
+next_match(GtkWidget *close_btn, gpointer user_data)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
 
@@ -106,17 +106,16 @@ void next_match(GtkWidget *close_btn, gpointer user_data)
 		GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(view));
 		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
 
-					GtkTextMark *insert;
+		GtkTextMark *insert;
 
-				gtk_text_buffer_select_range (buffer,
-							      &match_start,
-							      &match_end);
+		gtk_text_buffer_select_range (buffer,
+				      &match_start,
+				      &match_end);
 
-				insert = gtk_text_buffer_get_insert (buffer);
+		insert = gtk_text_buffer_get_insert (buffer);
 
-				gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
-								    insert);	
-	}
+		gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view), insert);	
+	}	
 }
 
 static
@@ -125,13 +124,6 @@ GtkSourceView * litos_app_window_set_search_context(LitosAppWindow *win, const c
 	GtkSourceSearchSettings *settings = gtk_source_search_settings_new ();
 
 	GtkSourceView *source_view = currentTabSourceView(win);
-
-	/*
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(win->button_check_case)))
-		gtk_source_search_settings_set_case_sensitive (settings, TRUE);
-
-	else
-		gtk_source_search_settings_set_case_sensitive (settings, FALSE);*/
 
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(source_view));
 
@@ -182,12 +174,12 @@ search_text_changed (GtkEntry *entry,
 
 		insert = gtk_text_buffer_get_insert (buffer);
 
-		gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
+		/*gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
 						    insert);
-		/*gtk_text_buffer_select_range (buffer, &match_start, &match_end);
+		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
 		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
-				0.0, FALSE, 0.0, 0.0);
-		gtk_text_buffer_move_mark (buffer, mark, &match_end);*/
+				0.0, FALSE, 0.0, 0.0);*/
+		gtk_text_buffer_move_mark (buffer, mark, &match_end);
 	}
 }
 
