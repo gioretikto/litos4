@@ -6,11 +6,9 @@
 #include "litosfile.h"
 
 void setAccels (GApplication *app);
-gboolean litos_file_load (LitosFile *file, GError **error);
+LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf);
 GFile *litos_file_get_gfile(LitosFile* file);
 
-LitosFile * litos_app_window_new_tab(LitosAppWindow *win, GFile *gf);
-LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf);
 guint litos_app_window_get_array_len(LitosAppWindow *win);
 LitosFile * litos_app_window_get_file(LitosAppWindow *win, int *i);
 GtkNotebook * litos_app_window_get_nb(LitosAppWindow *win);
@@ -64,15 +62,6 @@ litos_app_activate (GApplication *app)
 	gtk_window_set_title (window, "Litos");
 	gtk_window_maximize (window);
 	gtk_window_present (window);
-}
-
-void litos_app_error_dialog(GtkWindow *window, GError *error, char *filename)
-{
-	GtkWidget *message_dialog;
-	message_dialog = gtk_message_dialog_new(window, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR,
-	GTK_BUTTONS_CLOSE, "ERROR : Can't load %s.\n %s", filename, error->message);
-	gtk_widget_show(message_dialog);
-	g_error_free(error);
 }
 
 gboolean litos_app_check_duplicate(char *filename, LitosAppWindow *win)
@@ -134,8 +123,6 @@ litos_app_open (GApplication  *app,
 			if (!litos_app_check_duplicate(filename,win))
 			{
 				LitosFile *litos_file = litos_app_window_open(win,files[i]);
-				if (!litos_file_load(litos_file,&error))
-					litos_app_error_dialog(GTK_WINDOW(win), error, filename);
 			}
 
 			g_free(filename);

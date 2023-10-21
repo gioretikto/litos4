@@ -147,6 +147,11 @@ LitosFile *litos_file_new()
 	return g_object_new (LITOS_TYPE_FILE, NULL);
 }
 
+void litos_file_set_gfile(LitosFile *file, GFile *gfile)
+{
+	file->gfile = gfile;
+}
+
 GtkWidget * litos_file_get_lbl(LitosFile *file)
 {
 	return file->lbl;
@@ -177,9 +182,19 @@ gboolean litos_file_get_saved(LitosFile *file)
 	return file->saved;
 }
 
+void litos_file_reset_gfile(LitosFile *file)
+{
+	file->gfile = NULL;
+}
+
 GtkWidget * litos_file_get_tabbox(LitosFile *file)
 {
 	return file->tabbox;
+}
+
+void litos_file_set_saved(LitosFile *file)
+{
+	file->saved = TRUE;
 }
 
 void litos_file_set_unsaved(LitosFile *file)
@@ -214,15 +229,13 @@ void litos_file_highlight_buffer(LitosFile *file) /* Apply different font styles
 
 	GtkSourceBuffer *source_buffer = GTK_SOURCE_BUFFER(file->buffer);
 
-	if (file->name == NULL)
+	if ((lang = gtk_source_language_manager_guess_language(lm, file->name, NULL)) == NULL)
 		lang = gtk_source_language_manager_get_language(lm,"html");
-	else
-		lang = gtk_source_language_manager_guess_language(lm, file->name, NULL);
-
-	gtk_source_buffer_set_language (source_buffer, lang);
 
 	if (lang != NULL)
+	{	gtk_source_buffer_set_language (source_buffer, lang);
 		gtk_source_buffer_set_highlight_syntax (source_buffer, TRUE);
+	}
 
 	GtkSourceStyleSchemeManager *scheme_manager = gtk_source_style_scheme_manager_get_default();
 	const gchar * const* schemes = gtk_source_style_scheme_manager_get_scheme_ids(scheme_manager);
@@ -245,9 +258,8 @@ gboolean litos_file_load (LitosFile *file, GError **error)
 	if (g_file_load_contents (file->gfile, NULL, &contents, &length, NULL, error))
 	{
 		gtk_text_buffer_set_text (file->buffer, contents, length);
-		litos_file_highlight_buffer(file);
-		file->saved = TRUE;
 		g_object_notify_by_pspec (G_OBJECT (file), obj_properties[PROP_SAVED]);
+		file->saved = TRUE;
 		g_free (contents);
 		return TRUE;
 	}
@@ -255,6 +267,7 @@ gboolean litos_file_load (LitosFile *file, GError **error)
 	else
 		return FALSE;
 }
+
 
 gboolean litos_file_save(LitosFile *file, GError *error)
 {

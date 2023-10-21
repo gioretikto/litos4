@@ -10,7 +10,7 @@ main (int argc, char *argv[])
 	* is *not* necessary in properly installed
 	* application.
 	*/
-	g_setenv ("GSETTINGS_SCHEMA_DIR", ".", FALSE);
+	//g_setenv ("GSETTINGS_SCHEMA_DIR", ".", TRUE);
 
 	return g_application_run (G_APPLICATION (litos_app_new ()), argc, argv);
 }

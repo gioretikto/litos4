@@ -4,21 +4,20 @@
 #include "litosappprefs.h"
 #include "litosfile.h"
 
-gboolean litos_file_load (LitosFile *file, GError **error);
+gboolean litos_file_load (GFile *file, GtkTextBuffer *buffer, GError **error);
+void litos_file_highlight_buffer(LitosFile *file);
 GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
 GFile *litos_file_get_gfile(LitosFile* file);
+void litos_file_reset_gfile(LitosFile *file);
+void litos_file_set_gfile(LitosFile *file, GFile *gfile);
 gchar *litos_file_get_name(LitosFile *file);
-void litos_file_set_saved(LitosFile* file);
 
 gboolean litos_app_window_remove_child(LitosAppWindow *win);
 void litos_app_window_save(LitosAppWindow *win, LitosFile *file);
 void litos_app_window_save_as(LitosAppWindow *app);
-
-LitosFile * litos_app_window_new_tab(LitosAppWindow *win);
 LitosFile * litos_app_window_open(LitosAppWindow *win, GFile *gf);
-LitosFile * litos_app_window_open_tmpl(LitosAppWindow *win, GFile *gf);
-
 LitosFile * litos_app_window_current_file(LitosAppWindow *win);
+LitosFile * litos_app_window_new_file(LitosAppWindow *win);
 guint litos_app_window_get_array_len(LitosAppWindow *win);
 gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data);
 
@@ -27,24 +26,21 @@ void litos_app_error_dialog(GtkWindow *window, GError *error, char *filename);
 gboolean litos_app_check_duplicate(char *filename, LitosAppWindow *win);
 
 static void
-open_cb (GtkWidget *dialog, gint response, gpointer win)
+open_cb (GtkWidget *dialog, gint response, gpointer window)
 {
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
-		GError *error = NULL;
 		GFile *gfile = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
 
-		LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
+		LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
 		if (gfile != NULL)
 		{
 			char *gfile_name = g_file_get_path(gfile);
 
-			if (!litos_app_check_duplicate(gfile_name,lwin))
+			if (!litos_app_check_duplicate(gfile_name,win))
 			{
-				LitosFile *file = litos_app_window_open(lwin,gfile);
-				if (!litos_file_load(file,&error))
-					litos_app_error_dialog(GTK_WINDOW(win), error, gfile_name);
+				LitosFile * file = litos_app_window_open(win, gfile);
 			}
 
 			g_free(gfile_name);
@@ -91,24 +87,18 @@ open_activated(GSimpleAction *action, GVariant *parameter, gpointer app)
 }
 
 static void
-open_tmpl_cb (GtkWidget *dialog, gint response, gpointer win)
+open_tmpl_cb (GtkWidget *dialog, gint response, gpointer window)
 {
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
-		GError *error = NULL;
 		GFile *gfile = gtk_file_chooser_get_file (GTK_FILE_CHOOSER (dialog));
 
-		LitosAppWindow *lwin = LITOS_APP_WINDOW(win);
+		LitosAppWindow *win = LITOS_APP_WINDOW(window);
 
 		if (gfile != NULL)
 		{
-			LitosFile * file = litos_app_window_new_tab(LITOS_APP_WINDOW(win));
-
-			char *contents;
-
-			g_file_get_contents (g_file_get_path(gfile), &contents, NULL, NULL);
-
-			gtk_text_buffer_set_text (litos_file_get_buffer(file), contents, strlen(contents));
+			LitosFile * file = litos_app_window_open(win, gfile);
+			litos_file_reset_gfile(file);
 		}
 	}
 
@@ -164,7 +154,6 @@ save_as_dialog (GSimpleAction *action, GVariant *parameter, gpointer app)
 	litos_app_window_save_as(LITOS_APP_WINDOW(win));
 }
 
-
 static void
 preferences_activated (GSimpleAction *action,
                        GVariant      *parameter,
@@ -202,8 +191,9 @@ new_file (GSimpleAction *action,
                 GVariant      *parameter,
                 gpointer       app)
 {
-	GtkWindow *win = gtk_application_get_active_window (GTK_APPLICATION (app));
-	litos_app_window_new_tab(LITOS_APP_WINDOW(win));
+	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);
+	LitosFile * file = litos_app_window_new_file(win);
 }
 
 /* Called when Ctrl+B, Ctrl+i, etc is toggled */
