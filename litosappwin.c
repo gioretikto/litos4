@@ -178,11 +178,11 @@ search_text_changed (GtkEntry *entry,
 
 		insert = gtk_text_buffer_get_insert (buffer);
 
-		/*gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
+		gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
 						    insert);
 		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
 		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
-				0.0, FALSE, 0.0, 0.0);*/
+				0.0, FALSE, 0.0, 0.0);
 		gtk_text_buffer_move_mark (buffer, mark, &match_end);
 	}
 }
