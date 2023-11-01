@@ -44,9 +44,11 @@ clean:
 	rm -f litos
 
 uninstall:
-	rm -f $(DESKTOPDIR)$(DESKTOP)
-	rm -f $(ICONDIR)$(ICON)
-	rm -f $(BINDIR)$(TARGET)
+	rm -f $(DESKTOPDIR)/$(DESKTOP)
+	rm -f $(ICONDIR)/$(ICON)
+	rm -f $(BINDIR)/$(TARGET)
+	rm -f $(SCHEMADIR)/$(SCHEMA)
+	$(GLIB_COMPILE_SCHEMAS) $(SCHEMADIR)
 install:
 	install $(TARGET) $(BINDIR)
 	install $(DESKTOP) $(DESKTOPDIR) 
