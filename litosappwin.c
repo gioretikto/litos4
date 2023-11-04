@@ -104,7 +104,7 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 	if (win->search_context != NULL)
 	{
 		GtkSourceBuffer *buffer;
-		GtkTextIter start, end;
+		GtkTextIter start, match_start, match_end;
 		g_autoptr(GError) error = NULL;
 
 		buffer = gtk_source_search_context_get_buffer (win->search_context);
@@ -113,9 +113,9 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 					      NULL,
 					      &start);
 
-		gtk_source_search_context_forward (win->search_context, &start, NULL, &end, FALSE);
+		gtk_source_search_context_forward (win->search_context, &start, &match_start, &match_end, FALSE);
 
-		gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &start, &end);
+		gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &match_start, &match_end);
 	}	
 }
 
