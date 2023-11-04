@@ -296,15 +296,15 @@ void setAccels (GApplication *app)
 	  { "app.insert_html('<a href=\"this.html\">%s</a>')", { "<Control>h", NULL} },
 	  { "app.insert_html(\"<p>%s</p>\")", { "<Control>p", NULL} },
 	  { "app.insert_html(\"<li>%s</li>\")", { "<Control>l", NULL} },
-	  { "app.insert_html(\"<sup>%s</sup>\")", { "<Control><Shift>p", NULL} },
+	  { "app.insert_html(\"<sup>%s</sup>\")", { "<Control>e", NULL} },
 	  { "app.insert_html(\"<sub>%s</sub>\")", { "<Control>u", NULL} },
 	  { "app.insert_char('<div class=\"eq\">\n<p>this</p>\n</div>\')", { "<Control>g", NULL} },
 	  { "app.insert_char(\"−\")", { "<Control>m", NULL} },
 	  { "app.insert_char(\"⋅\")", { "<Control>d", NULL} },
-	  { "app.insert_char(\"⟶⟼⇒\")", { "<Control>t", NULL} },
+	  { "app.insert_char(\"⟶⟼⇒\")", { "<Control><Shift>t", NULL} },
 	  { "app.insert_char(\"⇌⟵⇐\")", { "<Control>y", NULL} },
 	  { "app.insert_char(\"<br>\")", { "<Control>r", NULL} },
-	  { "app.insert_char(\"&emsp;■□\")", { "<Control>e", NULL} },
+	  { "app.insert_char(\"&emsp;■□\")", { "<Control>t", NULL} },
 	};
 
 	g_action_map_add_action_entries(G_ACTION_MAP(app), app_entries, G_N_ELEMENTS(app_entries), app);

@@ -103,22 +103,19 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 
 	if (win->search_context != NULL)
 	{
-		GtkTextIter match_start, match_end;
+		GtkSourceBuffer *buffer;
+		GtkTextIter start, end;
+		g_autoptr(GError) error = NULL;
 
-		GtkSourceView *view = currentTabSourceView(win);
+		buffer = gtk_source_search_context_get_buffer (win->search_context);
 
-		GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(view));
-		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
+		gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (buffer),
+					      NULL,
+					      &start);
 
-		GtkTextMark *insert;
+		gtk_source_search_context_forward (win->search_context, &start, NULL, &end, FALSE);
 
-		gtk_text_buffer_select_range (buffer,
-				      &match_start,
-				      &match_end);
-
-		insert = gtk_text_buffer_get_insert (buffer);
-
-		gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view), insert);	
+		gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &start, &end);
 	}	
 }
 
@@ -172,18 +169,13 @@ search_text_changed (GtkEntry *entry,
 	{
 		GtkTextMark *insert;
 
+		insert = gtk_text_buffer_get_insert (buffer);
+
+		gtk_text_buffer_move_mark (buffer, mark, &match_end);
+
 		gtk_text_buffer_select_range (buffer,
 					      &match_start,
 					      &match_end);
-
-		insert = gtk_text_buffer_get_insert (buffer);
-
-		gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (view),
-						    insert);
-		gtk_text_buffer_select_range (buffer, &match_start, &match_end);
-		gtk_text_view_scroll_to_iter (GTK_TEXT_VIEW(view), &match_start,
-				0.0, FALSE, 0.0, 0.0);
-		gtk_text_buffer_move_mark (buffer, mark, &match_end);
 	}
 }
 
