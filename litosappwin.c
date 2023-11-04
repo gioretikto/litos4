@@ -105,12 +105,11 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 	{
 		GtkSourceBuffer *buffer;
 		GtkTextIter start, match_start, match_end;
-		g_autoptr(GError) error = NULL;
 
 		buffer = gtk_source_search_context_get_buffer (win->search_context);
 
 		gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (buffer),
-					      NULL,
+					      &match_start,
 					      &start);
 
 		gtk_source_search_context_forward (win->search_context, &start, &match_start, &match_end, FALSE);
