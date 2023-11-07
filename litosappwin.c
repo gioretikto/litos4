@@ -103,16 +103,31 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 
 	if (win->search_context != NULL)
 	{
+		GtkTextMark* mark;
 		GtkSourceBuffer *buffer;
 		GtkTextIter start, match_start, match_end;
+		GtkSourceView *view = currentTabSourceView(win);
 
 		buffer = gtk_source_search_context_get_buffer (win->search_context);
-
+		
 		gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (buffer),
 					      &match_start,
 					      &start);
 
 		gtk_source_search_context_forward (win->search_context, &start, &match_start, &match_end, FALSE);
+
+		GtkSourceView *source_view = currentTabSourceView(win);
+
+		mark = gtk_text_buffer_get_insert(GTK_TEXT_BUFFER(buffer));
+
+		gtk_text_view_scroll_to_mark (
+			GTK_TEXT_VIEW(view),
+			mark,
+			0,
+			FALSE,
+			0.0,
+			0.0
+		);
 
 		gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &match_start, &match_end);
 	}	
@@ -159,6 +174,15 @@ search_text_changed (GtkEntry *entry,
 	buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(view));
 
 	mark = gtk_text_buffer_get_insert(buffer);
+
+	gtk_text_view_scroll_to_mark (
+		GTK_TEXT_VIEW(view),
+		mark,
+		0,
+		FALSE,
+		0.0,
+		0.0
+	);
 
 	/* Very simple-minded search implementation */
 
