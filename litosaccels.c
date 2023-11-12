@@ -301,8 +301,8 @@ void setAccels (GApplication *app)
 	  { "app.insert_char('<div class=\"eq\">\n<p>this</p>\n</div>\')", { "<Control>g", NULL} },
 	  { "app.insert_char(\"−\")", { "<Control>m", NULL} },
 	  { "app.insert_char(\"⋅\")", { "<Control>d", NULL} },
-	  { "app.insert_char(\"⟶⟼⇒\")", { "<Control><Shift>t", NULL} },
-	  { "app.insert_char(\"⇌⟵⇐\")", { "<Control>y", NULL} },
+	  { "app.insert_char(\"⟶⟼⇒\")", { "<Control>y", NULL} },
+	  { "app.insert_char(\"⇌⟵⇐\")", { "<Control><Shift>y", NULL} },
 	  { "app.insert_char(\"<br>\")", { "<Control>r", NULL} },
 	  { "app.insert_char(\"&emsp;■□\")", { "<Control>t", NULL} },
 	};
