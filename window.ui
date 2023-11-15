@@ -31,7 +31,7 @@
 	  <child>
             <object class="GtkBox" id="search_box">
             <child>
-              <object class="GtkSearchEntry" id="searchentry">
+              <object class="GtkSearchEntry" id="search_entry">
                 <signal name="search-changed" handler="search_text_changed"/>
               </object>
             </child>

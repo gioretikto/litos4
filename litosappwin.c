@@ -35,6 +35,7 @@ struct _LitosAppWindow
 	GtkWidget *gears;
 	GtkWidget *search;
 	GtkWidget *searchbar;
+	GtkWidget *search_entry;
 	GtkWidget *about;
 	GtkWidget *prev_button;
 	GtkWidget *next_button;
@@ -436,6 +437,8 @@ litos_app_window_init (LitosAppWindow *win)
 	g_signal_connect (GTK_WINDOW(win), "close-request", G_CALLBACK (litos_app_window_quit), win);
 	g_signal_connect (win->next_button, "clicked", G_CALLBACK(next_match), win);
 	//g_signal_connect (win->up_search, "clicked", G_CALLBACK(previous_match), win);
+
+	gtk_widget_grab_focus(win->search_entry);
 	
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
@@ -482,6 +485,7 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, gears);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, searchbar);
+	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search_entry);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, about);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, prev_button);
 	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, next_button);
