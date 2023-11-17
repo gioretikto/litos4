@@ -1,3 +1,14 @@
+/*	Copyright (C) 2021 Litos
+
+	This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+	This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <gtk/gtk.h>
 #include <gtksourceview/gtksource.h>
 
@@ -438,8 +449,9 @@ litos_app_window_init (LitosAppWindow *win)
 	g_signal_connect (win->next_button, "clicked", G_CALLBACK(next_match), win);
 	//g_signal_connect (win->up_search, "clicked", G_CALLBACK(previous_match), win);
 
+	gtk_widget_set_can_focus(win->search_entry, TRUE);
 	gtk_widget_grab_focus(win->search_entry);
-	
+
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
 		G_BINDING_BIDIRECTIONAL);
@@ -578,7 +590,7 @@ litos_app_window_new_tab(LitosAppWindow *win, struct Page *page)
 		gtk_notebook_append_page_menu (win->notebook, page->tabbox, page->close_btn_box, page->close_btn_box)
 	);
 
-	gtk_widget_grab_focus(GTK_WIDGET(page->view));
+	gtk_widget_grab_focus(page->view);
 
 	gtk_notebook_set_tab_reorderable(win->notebook, page->tabbox, TRUE);
 
