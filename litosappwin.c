@@ -218,6 +218,13 @@ search_text_changed (GtkEntry *entry,
 }
 
 static void
+search_btn_clicked (GtkWidget *search_btn, gpointer user_data)
+{
+	/* auto grab search entry box on clicking search button */
+	gtk_widget_grab_focus(LITOS_APP_WINDOW(user_data)->search_entry);
+}
+
+static void
 visible_child_changed (GObject *notebook,
 			GParamSpec *pspec,
 			LitosAppWindow *win)
@@ -226,6 +233,8 @@ visible_child_changed (GObject *notebook,
 		return;
 
 	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (win->searchbar), FALSE);
+
+
 }
 
 static void
@@ -311,7 +320,7 @@ litos_app_window_saveornot_dialog_cb(GtkWidget *dialog, int response, gpointer w
 	switch (response)
 	{
 		case GTK_RESPONSE_ACCEPT:
-			litos_app_window_remove_page(win,file);		
+			litos_app_window_remove_page(win,file);
 			break;
 
 		case GTK_RESPONSE_CANCEL:
@@ -447,10 +456,10 @@ litos_app_window_init (LitosAppWindow *win)
 
 	g_signal_connect (GTK_WINDOW(win), "close-request", G_CALLBACK (litos_app_window_quit), win);
 	g_signal_connect (win->next_button, "clicked", G_CALLBACK(next_match), win);
-	//g_signal_connect (win->up_search, "clicked", G_CALLBACK(previous_match), win);
+	g_signal_connect (win->search, "clicked", G_CALLBACK(search_btn_clicked), win);
 
-	gtk_widget_set_can_focus(win->search_entry, TRUE);
-	gtk_widget_grab_focus(win->search_entry);
+	/* allow search entry to be automatically focused */
+ 	gtk_widget_set_can_focus(win->search_entry, TRUE);
 
 	g_object_bind_property (win->search, "active",
 		win->searchbar, "search-mode-enabled",
@@ -460,9 +469,7 @@ litos_app_window_init (LitosAppWindow *win)
 static void
 litos_app_window_dispose (GObject *object)
 {
-	LitosAppWindow *win;
-
-	win = LITOS_APP_WINDOW (object);
+	LitosAppWindow *win = LITOS_APP_WINDOW (object);
 
 	g_clear_object (&win->settings);
 
@@ -594,8 +601,8 @@ litos_app_window_new_tab(LitosAppWindow *win, struct Page *page)
 
 	gtk_notebook_set_tab_reorderable(win->notebook, page->tabbox, TRUE);
 
-	g_signal_connect(close_btn, "clicked", 
-	    G_CALLBACK(close_btn_clicked), win);
+	g_signal_connect(close_btn, "clicked",
+		G_CALLBACK(close_btn_clicked), win);
 
 	g_ptr_array_add(win->litosFileList, file);
 
