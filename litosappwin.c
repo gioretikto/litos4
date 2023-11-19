@@ -17,6 +17,10 @@
 #include "litosfile.h"
 #include "page.h"
 
+#define BIND_CHILD(x) gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, x);
+
+#define SCROLL_TO_MARK gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW(view), mark, 0, FALSE, 0.0,	0.0);
+
 GFile *litos_file_get_gfile(LitosFile* file);
 gboolean litos_file_save(LitosFile *file, GError *error);
 void litos_file_save_as(LitosFile* file, GFile *new_file);
@@ -133,26 +137,12 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 
 			mark = gtk_text_buffer_get_insert(GTK_TEXT_BUFFER(buffer));
 
-			gtk_text_view_scroll_to_mark (
-				GTK_TEXT_VIEW(view),
-				mark,
-				0,
-				FALSE,
-				0.0,
-				0.0
-			);
+			SCROLL_TO_MARK
 
 			gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &match_start, &match_end);
 		}
 
-		gtk_text_view_scroll_to_mark (
-			GTK_TEXT_VIEW(view),
-			mark,
-			0,
-			FALSE,
-			0.0,
-			0.0
-		);
+		SCROLL_TO_MARK
 	}
 }
 
@@ -198,14 +188,7 @@ search_text_changed (GtkEntry *entry,
 
 	mark = gtk_text_buffer_get_insert(buffer);
 
-	gtk_text_view_scroll_to_mark (
-		GTK_TEXT_VIEW(view),
-		mark,
-		0,
-		FALSE,
-		0.0,
-		0.0
-	);
+	SCROLL_TO_MARK
 
 	/* Very simple-minded search implementation */
 
@@ -509,15 +492,17 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 
 	gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (class),
 						"/org/gtk/litos/window.ui");
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, notebook);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, gears);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, searchbar);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, search_entry);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, about);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, prev_button);
-	gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, next_button);
-	//gtk_widget_class_bind_template_child (GTK_WIDGET_CLASS (class), LitosAppWindow, button_check_case);
+
+	BIND_CHILD (notebook);
+	BIND_CHILD (gears)
+	BIND_CHILD (search)
+	BIND_CHILD (searchbar)
+	BIND_CHILD (search_entry)
+	BIND_CHILD (about)
+	BIND_CHILD (search)
+	BIND_CHILD (prev_button)
+	BIND_CHILD (next_button)
+	//BIND_CHILD (button_check_case)
 
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), about_dialog);
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);
