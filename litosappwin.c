@@ -119,7 +119,7 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 
 	if (win->search_context != NULL)
 	{
-		GtkTextMark* mark;
+		GtkTextMark* mark = NULL;
 		GtkSourceBuffer *buffer;
 		GtkTextIter start, match_start, match_end;
 
@@ -141,8 +141,9 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 
 			gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &match_start, &match_end);
 		}
-
-		SCROLL_TO_MARK
+		
+		if (mark != NULL)
+			SCROLL_TO_MARK
 	}
 }
 
