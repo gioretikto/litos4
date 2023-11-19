@@ -144,6 +144,15 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 
 			gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &match_start, &match_end);
 		}
+
+		gtk_text_view_scroll_to_mark (
+			GTK_TEXT_VIEW(view),
+			mark,
+			0,
+			FALSE,
+			0.0,
+			0.0
+		);
 	}
 }
 
