@@ -140,10 +140,9 @@ next_match(GtkWidget *close_btn, gpointer user_data)
 			SCROLL_TO_MARK
 
 			gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &match_start, &match_end);
-		}
-		
-		if (mark != NULL)
+
 			SCROLL_TO_MARK
+		}
 	}
 }
 
