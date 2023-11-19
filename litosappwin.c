@@ -113,13 +113,47 @@ GtkSourceView* currentTabSourceView(LitosAppWindow *win)
 }
 
 static void
+prev_match(GtkWidget *close_btn, gpointer user_data)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
+
+	if (win->search_context != NULL)
+	{
+		GtkTextMark* mark;
+		GtkSourceBuffer *buffer;
+		GtkTextIter start, match_start, match_end;
+
+		GtkSourceView *view = currentTabSourceView(win);
+
+		buffer = gtk_source_search_context_get_buffer (win->search_context);
+
+		gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (buffer),
+					      &match_start,
+					      &start);
+
+		if (gtk_source_search_context_backward (win->search_context, &start, &match_start, &match_end, NULL))
+		{
+			GtkSourceView *source_view = currentTabSourceView(win);
+
+			mark = gtk_text_buffer_get_insert(GTK_TEXT_BUFFER(buffer));
+
+			SCROLL_TO_MARK
+
+			gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &match_start, &match_end);
+
+			SCROLL_TO_MARK
+		}
+	}
+}
+
+static void
 next_match(GtkWidget *close_btn, gpointer user_data)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(user_data);
 
 	if (win->search_context != NULL)
 	{
-		GtkTextMark* mark = NULL;
+		GtkTextMark* mark;
 		GtkSourceBuffer *buffer;
 		GtkTextIter start, match_start, match_end;
 
@@ -447,6 +481,7 @@ litos_app_window_init (LitosAppWindow *win)
 	litos_app_window_update_font();
 
 	g_signal_connect (GTK_WINDOW(win), "close-request", G_CALLBACK (litos_app_window_quit), win);
+	g_signal_connect (win->next_button, "clicked", G_CALLBACK(prev_match), win);
 	g_signal_connect (win->next_button, "clicked", G_CALLBACK(next_match), win);
 	g_signal_connect (win->search, "clicked", G_CALLBACK(search_btn_clicked), win);
 
