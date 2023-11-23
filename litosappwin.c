@@ -480,7 +480,7 @@ litos_app_window_init (LitosAppWindow *win)
 	litos_app_window_update_font();
 
 	g_signal_connect (GTK_WINDOW(win), "close-request", G_CALLBACK (litos_app_window_quit), win);
-	g_signal_connect (win->next_button, "clicked", G_CALLBACK(prev_match), win);
+	g_signal_connect (win->prev_button, "clicked", G_CALLBACK(prev_match), win);
 	g_signal_connect (win->next_button, "clicked", G_CALLBACK(next_match), win);
 	g_signal_connect (win->search, "clicked", G_CALLBACK(search_btn_clicked), win);
 
