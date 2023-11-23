@@ -121,17 +121,17 @@ prev_match(GtkWidget *close_btn, gpointer user_data)
 	{
 		GtkTextMark* mark;
 		GtkSourceBuffer *buffer;
-		GtkTextIter start, match_start, match_end;
+		GtkTextIter selection_begin, selection_end;
+		GtkTextIter match_start, match_end;
 
 		GtkSourceView *view = currentTabSourceView(win);
 
 		buffer = gtk_source_search_context_get_buffer (win->search_context);
 
 		gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (buffer),
-					      &match_start,
-					      &start);
+			&selection_begin, &selection_end);
 
-		if (gtk_source_search_context_backward (win->search_context, &start, &match_start, &match_end, NULL))
+		if (gtk_source_search_context_backward(win->search_context, &selection_begin, &match_start, &match_end, NULL))
 		{
 			GtkSourceView *source_view = currentTabSourceView(win);
 
@@ -139,7 +139,7 @@ prev_match(GtkWidget *close_btn, gpointer user_data)
 
 			SCROLL_TO_MARK
 
-			gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &match_start, &match_end);
+			gtk_text_buffer_select_range (GTK_TEXT_BUFFER (buffer), &match_end, &match_start);
 
 			SCROLL_TO_MARK
 		}
@@ -240,7 +240,6 @@ search_text_changed (GtkEntry *entry,
 					      &match_start,
 					      &match_end);
 	}
-
 }
 
 static void
