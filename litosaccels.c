@@ -20,6 +20,7 @@ LitosFile * litos_app_window_current_file(LitosAppWindow *win);
 LitosFile * litos_app_window_new_file(LitosAppWindow *win);
 guint litos_app_window_get_array_len(LitosAppWindow *win);
 gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data);
+void search_btn_clicked (GtkWidget *search_btn, gpointer user_data);
 
 void litos_app_error_dialog(GtkWindow *window, GError *error, char *filename);
 
@@ -263,7 +264,7 @@ insertHtmlTags (GSimpleAction *action, GVariant *parameter, gpointer app)
 static void
 find_selection (GSimpleAction *action, GVariant *parameter, gpointer app)
 {
-	/* 
+	/*GtkTextIter start, end;
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
@@ -273,10 +274,6 @@ find_selection (GSimpleAction *action, GVariant *parameter, gpointer app)
 	GtkTextBuffer *buffer = litos_file_get_buffer(file);
 
 	const char *stringToSearch = NULL;
-
-	GtkTextIter start, end;
-
-	GtkTextBuffer *buffer = get_current_buffer(litos);
 
 	if (gtk_text_buffer_get_selection_bounds(buffer, &start, &end)) 
 	{
@@ -292,7 +289,9 @@ find_selection (GSimpleAction *action, GVariant *parameter, gpointer app)
 		stringToSearch = gtk_entry_get_text(GTK_ENTRY(search_entry));
 
 	if (stringToSearch == NULL || *stringToSearch == '\0')
-		return;*/
+		return;
+	else
+		search_btn_clicked(NULL, win);*/
 }
 
 void setAccels (GApplication *app)

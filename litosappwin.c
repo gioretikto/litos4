@@ -242,8 +242,7 @@ search_text_changed (GtkEntry *entry,
 	}
 }
 
-static void
-search_btn_clicked (GtkWidget *search_btn, gpointer user_data)
+void search_btn_clicked (GtkWidget *search_btn, gpointer user_data)
 {
 	/* auto grab search entry box on clicking search button */
 	gtk_widget_grab_focus(LITOS_APP_WINDOW(user_data)->search_entry);
