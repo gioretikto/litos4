@@ -257,8 +257,6 @@ visible_child_changed (GObject *notebook,
 		return;
 
 	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (win->searchbar), FALSE);
-
-
 }
 
 static void

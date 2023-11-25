@@ -264,11 +264,11 @@ insertHtmlTags (GSimpleAction *action, GVariant *parameter, gpointer app)
 static void
 find_selection (GSimpleAction *action, GVariant *parameter, gpointer app)
 {
-	/*GtkTextIter start, end;
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
-
+	
+	/*GtkTextIter start, end;
 	LitosFile *file = litos_app_window_current_file(win);
 
 	GtkTextBuffer *buffer = litos_file_get_buffer(file);
@@ -290,8 +290,8 @@ find_selection (GSimpleAction *action, GVariant *parameter, gpointer app)
 
 	if (stringToSearch == NULL || *stringToSearch == '\0')
 		return;
-	else
-		search_btn_clicked(NULL, win);*/
+	else*/
+		search_btn_clicked(NULL, win);
 }
 
 void setAccels (GApplication *app)
