@@ -25,6 +25,7 @@ void search_btn_clicked (GtkWidget *search_btn, gpointer user_data);
 void litos_app_error_dialog(GtkWindow *window, GError *error, char *filename);
 
 gboolean litos_app_check_duplicate(char *filename, LitosAppWindow *win);
+void set_search_entry(LitosAppWindow *win);
 
 static void
 open_cb (GtkWidget *dialog, gint response, gpointer window)
@@ -266,32 +267,11 @@ find_selection (GSimpleAction *action, GVariant *parameter, gpointer app)
 {
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 
-	LitosAppWindow *win = LITOS_APP_WINDOW(window);
-	
-	/*GtkTextIter start, end;
-	LitosFile *file = litos_app_window_current_file(win);
+	LitosAppWindow *win = LITOS_APP_WINDOW(window);	
 
-	GtkTextBuffer *buffer = litos_file_get_buffer(file);
+	search_btn_clicked(NULL, win);
 
-	const char *stringToSearch = NULL;
-
-	if (gtk_text_buffer_get_selection_bounds(buffer, &start, &end)) 
-	{
-		stringToSearch = gtk_text_buffer_get_text (buffer,			
-							&start,
-							&end,
-							FALSE);
-
-		gtk_entry_set_text(GTK_ENTRY(search_entry), gtk_text_iter_get_text (&start, &end));
-	}
-
-	else
-		stringToSearch = gtk_entry_get_text(GTK_ENTRY(search_entry));
-
-	if (stringToSearch == NULL || *stringToSearch == '\0')
-		return;
-	else*/
-		search_btn_clicked(NULL, win);
+	set_search_entry(win);
 }
 
 void setAccels (GApplication *app)

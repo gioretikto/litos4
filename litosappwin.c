@@ -33,6 +33,7 @@ GtkWidget * litos_file_get_view(LitosFile *file);
 GtkWidget * litos_file_get_lbl(LitosFile *file);
 GtkWidget * litos_file_get_tabbox(LitosFile *file);
 gboolean litos_file_load (LitosFile *file, GError **error);
+GtkTextBuffer *litos_file_get_buffer(LitosFile *file);
 
 GtkCssProvider * litos_app_get_css_provider(LitosApp *app);
 GSettings *litos_app_get_settings(LitosApp *app);;
@@ -239,6 +240,33 @@ search_text_changed (GtkEntry *entry,
 		gtk_text_buffer_select_range (buffer,
 					      &match_start,
 					      &match_end);
+	}
+}
+
+void set_search_entry(LitosAppWindow *win)
+{
+	GtkTextIter start, end;
+	LitosFile *file = litos_app_window_current_file(win);
+	GtkEntryBuffer *entry_buffer;
+
+	GtkTextBuffer *buffer = litos_file_get_buffer(file);
+
+	const char *stringToSearch = NULL;
+
+	if (gtk_text_buffer_get_selection_bounds(buffer, &start, &end)) 
+	{
+		stringToSearch = gtk_text_buffer_get_text (buffer,			
+							&start,
+							&end,
+							FALSE);
+
+		gtk_entry_buffer_insert_text (entry_buffer,
+			0,
+			stringToSearch,
+			-1
+		);
+
+		gtk_entry_set_buffer(GTK_ENTRY(win->search_entry), entry_buffer);
 	}
 }
 
