@@ -20,7 +20,7 @@ LitosFile * litos_app_window_current_file(LitosAppWindow *win);
 LitosFile * litos_app_window_new_file(LitosAppWindow *win);
 guint litos_app_window_get_array_len(LitosAppWindow *win);
 gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data);
-void search_btn_clicked (GtkWidget *search_btn, gpointer user_data);
+void ctrl_f(LitosAppWindow *win);
 
 void litos_app_error_dialog(GtkWindow *window, GError *error, char *filename);
 
@@ -269,9 +269,9 @@ find_selection (GSimpleAction *action, GVariant *parameter, gpointer app)
 
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);	
 
-	search_btn_clicked(NULL, win);
+	ctrl_f(win);
 
-	set_search_entry(win);
+	//set_search_entry(win);
 }
 
 void setAccels (GApplication *app)
