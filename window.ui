@@ -35,6 +35,11 @@
                 <signal name="search-changed" handler="search_text_changed"/>
               </object>
             </child>
+        <child type="end">
+          <object class="GtkCheckButton" id="btn_check_case">
+            <property name="sensitive">0</property>
+          </object>
+	</child>
 	    <child>
 	      <object class="GtkButton" id="prev_button">
 	        <property name="icon-name">go-up</property>

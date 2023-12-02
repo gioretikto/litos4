@@ -55,7 +55,7 @@ struct _LitosAppWindow
 	GtkWidget *about;
 	GtkWidget *prev_button;
 	GtkWidget *next_button;
-	GtkWidget *button_check_case;
+	GtkWidget *btn_check_case;
 	GtkSourceSearchContext *search_context;
 	GPtrArray *litosFileList;
 	gboolean quit;
@@ -189,6 +189,12 @@ litos_app_window_set_search_context(LitosAppWindow *win, const char *stringToSea
 	GtkSourceView *source_view = currentTabSourceView(win);
 
 	GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW(source_view));
+
+	if (gtk_check_button_get_active(GTK_CHECK_BUTTON(win->btn_check_case)))
+		gtk_source_search_settings_set_case_sensitive (settings, TRUE);
+
+	else
+		gtk_source_search_settings_set_case_sensitive (settings, FALSE);
 
 	gtk_source_search_settings_set_search_text (settings, stringToSearch);
 
@@ -558,7 +564,7 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 	gtk_widget_class_set_template_from_resource (GTK_WIDGET_CLASS (class),
 						"/org/gtk/litos/window.ui");
 
-	BIND_CHILD (notebook);
+	BIND_CHILD (notebook)
 	BIND_CHILD (gears)
 	BIND_CHILD (search)
 	BIND_CHILD (searchbar)
@@ -567,7 +573,7 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 	BIND_CHILD (search)
 	BIND_CHILD (prev_button)
 	BIND_CHILD (next_button)
-	//BIND_CHILD (button_check_case)
+	BIND_CHILD (btn_check_case)
 
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), about_dialog);
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), search_text_changed);
