@@ -49,9 +49,10 @@ struct _LitosAppWindow
 	GSettings *settings;
 	GtkNotebook *notebook;
 	GtkWidget *gears;
-	GtkWidget *search;
+	GtkWidget *btn_find_icon;
 	GtkWidget *searchbar;
 	GtkWidget *search_entry;
+	GtkWidget *replace_search_entry;
 	GtkWidget *about;
 	GtkWidget *prev_button;
 	GtkWidget *next_button;
@@ -278,7 +279,7 @@ void set_search_entry(LitosAppWindow *win)
 
 void ctrl_f(LitosAppWindow *win)
 {
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(LITOS_APP_WINDOW(win)->search), TRUE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(LITOS_APP_WINDOW(win)->btn_find_icon), TRUE);
 	gtk_widget_grab_focus(LITOS_APP_WINDOW(win)->search_entry);
 }
 
@@ -508,7 +509,7 @@ litos_app_window_init (LitosAppWindow *win)
 	g_object_unref (builder);
 
 	win->settings = g_settings_new ("org.gtk.litos");
-	gtk_widget_set_sensitive (win->search, TRUE);
+	gtk_widget_set_sensitive (win->btn_find_icon, TRUE);
 
 	win->quit = FALSE;
 	win->search_context = NULL;
@@ -519,12 +520,12 @@ litos_app_window_init (LitosAppWindow *win)
 	g_signal_connect (GTK_WINDOW(win), "close-request", G_CALLBACK (litos_app_window_quit), win);
 	g_signal_connect (win->prev_button, "clicked", G_CALLBACK(prev_match), win);
 	g_signal_connect (win->next_button, "clicked", G_CALLBACK(next_match), win);
-	g_signal_connect (win->search, "clicked", G_CALLBACK(search_btn_clicked), win);
+	g_signal_connect (win->btn_find_icon, "clicked", G_CALLBACK(search_btn_clicked), win);
 
 	/* allow search entry to be automatically focused */
  	gtk_widget_set_can_focus(win->search_entry, TRUE);
 
-	g_object_bind_property (win->search, "active",
+	g_object_bind_property (win->btn_find_icon, "active",
 		win->searchbar, "search-mode-enabled",
 		G_BINDING_BIDIRECTIONAL);
 }
@@ -566,11 +567,11 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 
 	BIND_CHILD (notebook)
 	BIND_CHILD (gears)
-	BIND_CHILD (search)
+	BIND_CHILD (btn_find_icon)
 	BIND_CHILD (searchbar)
 	BIND_CHILD (search_entry)
+	BIND_CHILD (replace_search_entry)
 	BIND_CHILD (about)
-	BIND_CHILD (search)
 	BIND_CHILD (prev_button)
 	BIND_CHILD (next_button)
 	BIND_CHILD (btn_check_case)
