@@ -35,14 +35,6 @@
                 <signal name="search-changed" handler="search_text_changed"/>
               </object>
             </child>
-   	 <child>
-      	  <object class="GtkBox" id="replace_box">
-            <child>
-              <object class="GtkText" id="replace_search_entry">
-              </object>
-            </child>
-              </object>
-            </child>
         <child type="end">
           <object class="GtkCheckButton" id="btn_check_case">
 	  <property name="label">Match case</property>
@@ -58,10 +50,18 @@
 	        <property name="icon-name">go-down</property>
 	      </object>
 	   </child>
-         </object>
-        </child>
 	</object>
 	</child>
+	  <child>
+            <object class="GtkBox" id="replace_box">
+            <child>
+              <object class="GtkText" id="replace_search_entry">
+              </object>
+            </child>
+	</object>
+        </child>
+         </object>
+        </child>
         <child>
 	<object class="GtkNotebook" id="notebook">
 	</object>
