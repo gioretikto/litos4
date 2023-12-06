@@ -29,6 +29,9 @@
 				<child>
 					<object class="GtkSearchBar" id="searchbar">
 						<child>
+							<object class="GtkBox" id="replace_box">
+								<property name="orientation">vertical</property>
+								<child>
 							<object class="GtkBox" id="search_box">
 								<property name="orientation">horizontal</property>
 								<child>
@@ -53,9 +56,6 @@
 								</child>
 							</object>
 						</child>
-						<child>
-							<object class="GtkBox" id="replace_box">
-								<property name="orientation">vertical</property>
 								<child>
 									<object class="GtkText" id="replace_search_entry"></object>
 								</child>
