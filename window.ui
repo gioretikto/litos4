@@ -29,7 +29,7 @@
 				<child>
 					<object class="GtkSearchBar" id="searchbar">
 						<child>
-							<object class="GtkBox" id="replace_box">
+							<object class="GtkBox" id="find_box">
 								<property name="orientation">vertical</property>
 								<child>
 							<object class="GtkBox" id="search_box">
@@ -45,19 +45,26 @@
 									</object>
 								</child>
 								<child>
-									<object class="GtkButton" id="prev_button">
+									<object class="GtkButton" id="btn_prev">
 										<property name="icon-name">go-up</property>
 									</object>
 								</child>
 								<child>
-									<object class="GtkButton" id="next_button">
+									<object class="GtkButton" id="btn_next">
 										<property name="icon-name">go-down</property>
 									</object>
 								</child>
 							</object>
 						</child>
 								<child>
-									<object class="GtkText" id="replace_search_entry"></object>
+									<object class="GtkText" id="replace_search_entry">
+										<property name="tooltip-text">Replace</property>
+									</object>
+								</child>
+								<child>
+									<object class="GtkButton" id="btn_replace">
+										<property name="label">Replace</property>
+									</object>
 								</child>
 							</object>
 						</child>

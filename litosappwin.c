@@ -54,9 +54,10 @@ struct _LitosAppWindow
 	GtkWidget *search_entry;
 	GtkWidget *replace_search_entry;
 	GtkWidget *about;
-	GtkWidget *prev_button;
-	GtkWidget *next_button;
+	GtkWidget *btn_prev;
+	GtkWidget *btn_next;
 	GtkWidget *btn_check_case;
+	GtkWidget *btn_replace;
 	GtkSourceSearchContext *search_context;
 	GPtrArray *litosFileList;
 	gboolean quit;
@@ -518,8 +519,8 @@ litos_app_window_init (LitosAppWindow *win)
 	litos_app_window_update_font();
 
 	g_signal_connect (GTK_WINDOW(win), "close-request", G_CALLBACK (litos_app_window_quit), win);
-	g_signal_connect (win->prev_button, "clicked", G_CALLBACK(prev_match), win);
-	g_signal_connect (win->next_button, "clicked", G_CALLBACK(next_match), win);
+	g_signal_connect (win->btn_prev, "clicked", G_CALLBACK(prev_match), win);
+	g_signal_connect (win->btn_next, "clicked", G_CALLBACK(next_match), win);
 	g_signal_connect (win->btn_find_icon, "clicked", G_CALLBACK(search_btn_clicked), win);
 
 	/* allow search entry to be automatically focused */
@@ -528,6 +529,21 @@ litos_app_window_init (LitosAppWindow *win)
 	g_object_bind_property (win->btn_find_icon, "active",
 		win->searchbar, "search-mode-enabled",
 		G_BINDING_BIDIRECTIONAL);
+		
+	GdkDisplay *display = gdk_display_get_default ();
+	GtkCssProvider *provider = gtk_css_provider_new ();
+	gtk_css_provider_load_from_data (provider,
+		"text{"
+		"color: green;"
+		"background: black;"
+		"padding: 15px;"
+		"}",	 	
+		-1);
+
+	gtk_style_context_add_provider_for_display (display,
+				GTK_STYLE_PROVIDER (provider),
+				GTK_STYLE_PROVIDER_PRIORITY_USER);
+	g_object_unref (provider);
 }
 
 static void
@@ -572,8 +588,9 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 	BIND_CHILD (search_entry)
 	BIND_CHILD (replace_search_entry)
 	BIND_CHILD (about)
-	BIND_CHILD (prev_button)
-	BIND_CHILD (next_button)
+	BIND_CHILD (btn_prev)
+	BIND_CHILD (btn_next)
+	BIND_CHILD (btn_replace)
 	BIND_CHILD (btn_check_case)
 
 	gtk_widget_class_bind_template_callback (GTK_WIDGET_CLASS (class), about_dialog);
