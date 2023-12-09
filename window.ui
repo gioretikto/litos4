@@ -54,16 +54,21 @@
 										<property name="icon-name">go-down</property>
 									</object>
 								</child>
+								<child>
+									<object class="GtkLabel" id="lbl_number_occurences">
+										<property name="label">Number of occurences</property>
+									</object>
+								</child>
 							</object>
 						</child>
 								<child>
-									<object class="GtkText" id="replace_search_entry">
+									<object class="GtkEntry" id="replace_entry">
 										<property name="tooltip-text">Replace</property>
 									</object>
 								</child>
 								<child>
 									<object class="GtkButton" id="btn_replace">
-										<property name="label">Replace</property>
+										<property name="label">Replace All</property>
 									</object>
 								</child>
 							</object>

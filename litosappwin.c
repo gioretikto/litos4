@@ -52,12 +52,13 @@ struct _LitosAppWindow
 	GtkWidget *btn_find_icon;
 	GtkWidget *searchbar;
 	GtkWidget *search_entry;
-	GtkWidget *replace_search_entry;
+	GtkWidget *replace_entry;
 	GtkWidget *about;
 	GtkWidget *btn_prev;
 	GtkWidget *btn_next;
 	GtkWidget *btn_check_case;
 	GtkWidget *btn_replace;
+	GtkWidget *lbl_number_occurences;
 	GtkSourceSearchContext *search_context;
 	GPtrArray *litosFileList;
 	gboolean quit;
@@ -496,6 +497,65 @@ litos_app_window_update_font ()
 	g_free (css_string);
 }
 
+void replace_btn_clicked (GtkButton *button, gpointer userData)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
+
+	if (win->search_context == NULL)
+		return;
+		
+	guint count_replaced = 0;
+
+	GtkEntryBuffer *searchBuffer = GTK_ENTRY_BUFFER(gtk_source_search_context_get_buffer (win->search_context));
+		
+	GtkEntryBuffer *replaceBuffer = gtk_entry_get_buffer(GTK_ENTRY(win->replace_entry));
+	
+	const gchar *stringToSearch = gtk_entry_buffer_get_text (searchBuffer);
+	const gchar *replaceString = gtk_entry_buffer_get_text (replaceBuffer);
+
+	if (stringToSearch == NULL || replaceString == NULL)
+		return;
+
+	/* Search and Highlight replaced string */
+
+	count_replaced = gtk_source_search_context_replace_all (win->search_context,
+		replaceString,
+		-1,
+		NULL);
+
+	/* Don't search and highlight strings with spaces */
+	/*if (!isspace(replaceString[0])) 
+	{
+		searchString(litos, stringToSearch);
+
+		GtkSourceSearchSettings *settings = gtk_source_search_settings_new ();
+
+		clearSearchContext(litos);
+
+		gtk_source_search_settings_set_case_sensitive (settings, TRUE);
+
+		gtk_source_search_settings_set_search_text (settings, replaceString);
+
+		highlightSearchBuffer = GTK_SOURCE_BUFFER(get_current_buffer(litos));
+
+		litos->search_context = gtk_source_search_context_new(highlightSearchBuffer, settings);
+
+		highlightWord(litos);
+	}*/
+
+	//gtk_entry_set_text(GTK_ENTRY(win->replace_entry),"");
+
+	char str[80];
+
+	sprintf(str, "%d replacement", count_replaced);
+
+	gtk_label_set_label (GTK_LABEL(win->lbl_number_occurences),
+		str
+	);
+
+	g_print("%d replacement\n", count_replaced);
+}
+
 static void
 litos_app_window_init (LitosAppWindow *win)
 {
@@ -522,6 +582,7 @@ litos_app_window_init (LitosAppWindow *win)
 	g_signal_connect (win->btn_prev, "clicked", G_CALLBACK(prev_match), win);
 	g_signal_connect (win->btn_next, "clicked", G_CALLBACK(next_match), win);
 	g_signal_connect (win->btn_find_icon, "clicked", G_CALLBACK(search_btn_clicked), win);
+	g_signal_connect (win->btn_replace, "clicked", G_CALLBACK(replace_btn_clicked), win);
 
 	/* allow search entry to be automatically focused */
  	gtk_widget_set_can_focus(win->search_entry, TRUE);
@@ -586,10 +647,11 @@ litos_app_window_class_init (LitosAppWindowClass *class)
 	BIND_CHILD (btn_find_icon)
 	BIND_CHILD (searchbar)
 	BIND_CHILD (search_entry)
-	BIND_CHILD (replace_search_entry)
+	BIND_CHILD (replace_entry)
 	BIND_CHILD (about)
 	BIND_CHILD (btn_prev)
 	BIND_CHILD (btn_next)
+	BIND_CHILD (lbl_number_occurences)
 	BIND_CHILD (btn_replace)
 	BIND_CHILD (btn_check_case)
 
