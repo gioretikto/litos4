@@ -206,6 +206,41 @@ litos_app_window_set_search_context(LitosAppWindow *win, const char *stringToSea
 	return source_view;
 }
 
+void replace_btn_clicked (GtkButton *button, gpointer userData)
+{
+	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
+
+	if (win->search_context == NULL)
+		return;
+		
+	guint count_replaced = 0;
+
+	const gchar *stringToSearch = gtk_editable_get_text(GTK_EDITABLE(win->search_entry));
+	const gchar *replaceString = gtk_editable_get_text(GTK_EDITABLE(win->replace_entry));
+
+	if (stringToSearch == NULL || replaceString == NULL)
+		return;
+
+	/* Search and Highlight replaced string */
+
+	count_replaced = gtk_source_search_context_replace_all (win->search_context,
+		replaceString,
+		-1,
+		NULL);
+
+	gtk_editable_set_text(GTK_EDITABLE(win->replace_entry),"");
+
+	char str[80];
+
+	sprintf(str, "%d replacement", count_replaced);
+
+	gtk_label_set_label (GTK_LABEL(win->lbl_number_occurences),
+		str
+	);
+
+	g_print("%d replacement\n", count_replaced);
+}
+
 static void
 search_text_changed (GtkEntry *entry,
                      LitosAppWindow *win)
@@ -250,6 +285,17 @@ search_text_changed (GtkEntry *entry,
 					      &match_start,
 					      &match_end);
 	}
+	
+	gint counter = gtk_source_search_context_get_occurrences_count (win->search_context);
+
+	char str[80];
+
+	sprintf(str, "%d occurences", counter);
+
+	gtk_label_set_label (
+		GTK_LABEL(win->lbl_number_occurences),
+		str
+	);
 }
 
 void set_search_entry(LitosAppWindow *win)
@@ -495,61 +541,6 @@ litos_app_window_update_font ()
 	/* cleanup */
 	pango_font_description_free (font_desc);
 	g_free (css_string);
-}
-
-void replace_btn_clicked (GtkButton *button, gpointer userData)
-{
-	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
-
-	if (win->search_context == NULL)
-		return;
-		
-	guint count_replaced = 0;
-
-	const gchar *stringToSearch = gtk_editable_get_text(GTK_EDITABLE(win->search_entry));
-	const gchar *replaceString = gtk_editable_get_text(GTK_EDITABLE(win->replace_entry));
-
-	if (stringToSearch == NULL || replaceString == NULL)
-		return;
-
-	/* Search and Highlight replaced string */
-
-	count_replaced = gtk_source_search_context_replace_all (win->search_context,
-		replaceString,
-		-1,
-		NULL);
-
-	/* Don't search and highlight strings with spaces */
-	/*if (!isspace(replaceString[0])) 
-	{
-		searchString(litos, stringToSearch);
-
-		GtkSourceSearchSettings *settings = gtk_source_search_settings_new ();
-
-		clearSearchContext(litos);
-
-		gtk_source_search_settings_set_case_sensitive (settings, TRUE);
-
-		gtk_source_search_settings_set_search_text (settings, replaceString);
-
-		highlightSearchBuffer = GTK_SOURCE_BUFFER(get_current_buffer(litos));
-
-		litos->search_context = gtk_source_search_context_new(highlightSearchBuffer, settings);
-
-		highlightWord(litos);
-	}*/
-
-	//gtk_entry_set_text(GTK_ENTRY(win->replace_entry),"");
-
-	char str[80];
-
-	sprintf(str, "%d replacement", count_replaced);
-
-	gtk_label_set_label (GTK_LABEL(win->lbl_number_occurences),
-		str
-	);
-
-	g_print("%d replacement\n", count_replaced);
 }
 
 static void
