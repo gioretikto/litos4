@@ -509,8 +509,11 @@ gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
 		while (win->quit == TRUE && litos_app_window_remove_child(win))
 			;
 	}
-
-	return TRUE;
+	
+	if (litos_app_window_get_array_len(win) == 0)
+		g_application_quit (G_APPLICATION (app));
+	else
+		return TRUE;
 }
 
 void

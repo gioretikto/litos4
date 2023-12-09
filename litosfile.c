@@ -268,7 +268,6 @@ gboolean litos_file_load (LitosFile *file, GError **error)
 		return FALSE;
 }
 
-
 gboolean litos_file_save(LitosFile *file, GError *error)
 {
 	if (file->gfile != NULL)
@@ -309,9 +308,4 @@ void litos_file_save_as(LitosFile* file, GFile *new_file)
 	file->name = g_file_get_basename(new_file);
 
 	litos_file_save(file, NULL);
-}
-
-GtkWidget * litos_file_get_close_box(LitosFile *file)
-{
-	return file->close_btn_box;
 }
