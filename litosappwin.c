@@ -506,12 +506,8 @@ void replace_btn_clicked (GtkButton *button, gpointer userData)
 		
 	guint count_replaced = 0;
 
-	GtkEntryBuffer *searchBuffer = GTK_ENTRY_BUFFER(gtk_source_search_context_get_buffer (win->search_context));
-		
-	GtkEntryBuffer *replaceBuffer = gtk_entry_get_buffer(GTK_ENTRY(win->replace_entry));
-	
-	const gchar *stringToSearch = gtk_entry_buffer_get_text (searchBuffer);
-	const gchar *replaceString = gtk_entry_buffer_get_text (replaceBuffer);
+	const gchar *stringToSearch = gtk_editable_get_text(GTK_EDITABLE(win->search_entry));
+	const gchar *replaceString = gtk_editable_get_text(GTK_EDITABLE(win->replace_entry));
 
 	if (stringToSearch == NULL || replaceString == NULL)
 		return;
