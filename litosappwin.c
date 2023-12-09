@@ -206,7 +206,8 @@ litos_app_window_set_search_context(LitosAppWindow *win, const char *stringToSea
 	return source_view;
 }
 
-void replace_btn_clicked (GtkButton *button, gpointer userData)
+static void
+replace_btn_clicked (GtkButton *button, gpointer userData)
 {
 	LitosAppWindow *win = LITOS_APP_WINDOW(userData);
 
