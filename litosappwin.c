@@ -300,9 +300,8 @@ search_text_changed (GtkEntry *entry,
 
 void set_search_entry(LitosAppWindow *win)
 {
-	/*GtkTextIter start, end;
+	GtkTextIter start, end;
 	LitosFile *file = litos_app_window_current_file(win);
-	GtkEntryBuffer *entry_buffer;
 
 	GtkTextBuffer *buffer = litos_file_get_buffer(file);
 
@@ -315,20 +314,20 @@ void set_search_entry(LitosAppWindow *win)
 							&end,
 							FALSE);
 
-		gtk_entry_buffer_insert_text (entry_buffer,
-			0,
-			stringToSearch,
-			-1
-		);
+		gtk_editable_set_text(GTK_EDITABLE(win->search_entry),stringToSearch);
+	}
+}
 
-		gtk_entry_set_buffer(GTK_ENTRY(win->search_entry), entry_buffer);
-	}*/
+void Esc(LitosAppWindow *win)
+{
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(LITOS_APP_WINDOW(win)->btn_find_icon), FALSE);
 }
 
 void ctrl_f(LitosAppWindow *win)
 {
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(LITOS_APP_WINDOW(win)->btn_find_icon), TRUE);
 	gtk_widget_grab_focus(LITOS_APP_WINDOW(win)->search_entry);
+	set_search_entry(win);
 }
 
 void search_btn_clicked (GtkWidget *search_btn, gpointer user_data)
