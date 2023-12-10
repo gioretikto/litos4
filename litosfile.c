@@ -101,9 +101,9 @@ litos_file_set_property (GObject *object,
 }
 
 static void
-litos_file_get_property (GObject    *object,
-                          guint       property_id,
-                          GValue     *value,
+litos_file_get_property (GObject *object,
+                          guint property_id,
+                          GValue *value,
                           GParamSpec *pspec)
 {
 	LitosFile *self = LITOS_FILE (object);

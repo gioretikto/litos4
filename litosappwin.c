@@ -238,8 +238,6 @@ replace_btn_clicked (GtkButton *button, gpointer userData)
 	gtk_label_set_label (GTK_LABEL(win->lbl_number_occurences),
 		str
 	);
-
-	g_print("%d replacement\n", count_replaced);
 }
 
 static void
@@ -293,8 +291,7 @@ search_text_changed (GtkEntry *entry,
 
 	sprintf(str, "%d occurences", counter);
 
-	gtk_label_set_label (
-		GTK_LABEL(win->lbl_number_occurences),
+	gtk_label_set_label (GTK_LABEL(win->lbl_number_occurences),
 		str
 	);
 }
@@ -501,7 +498,10 @@ gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
 	GtkApplication *app = gtk_window_get_application(window);
 
 	if (litos_app_window_get_array_len(win) == 0)
+	{
 		g_application_quit (G_APPLICATION (app));
+		return FALSE;
+	}
 	
 	else
 	{
@@ -511,7 +511,11 @@ gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
 	}
 	
 	if (litos_app_window_get_array_len(win) == 0)
+	{
 		g_application_quit (G_APPLICATION (app));
+		return FALSE;
+	}
+	
 	else
 		return TRUE;
 }

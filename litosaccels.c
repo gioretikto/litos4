@@ -199,8 +199,8 @@ quit_activated (GSimpleAction *action, GVariant *parameter, gpointer app)
 
 static void
 new_file (GSimpleAction *action,
-                GVariant      *parameter,
-                gpointer       app)
+                GVariant *parameter,
+                gpointer app)
 {
 	GtkWindow *window = gtk_application_get_active_window (GTK_APPLICATION (app));
 	LitosAppWindow *win = LITOS_APP_WINDOW(window);
