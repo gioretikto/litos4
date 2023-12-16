@@ -498,10 +498,7 @@ gboolean litos_app_window_quit (GtkWindow *window, gpointer user_data)
 	GtkApplication *app = gtk_window_get_application(window);
 
 	if (litos_app_window_get_array_len(win) == 0)
-	{
-		g_application_quit (G_APPLICATION (app));
 		return FALSE;
-	}
 	
 	else
 	{
